@@ -105,6 +105,10 @@
   .fk-wlink{ display:inline-flex; align-items:center; gap:6px; vertical-align:middle; margin:2px 1px; padding:5px 12px 5px 10px; border-radius:999px; background:var(--fk-wpp); color:#fff !important; font-weight:700; font-size:.86em; line-height:1.35; text-decoration:none; box-shadow:0 6px 16px -6px rgba(37,211,102,.85); transition:transform .16s, background .16s; }
   .fk-wlink:hover{ background:var(--fk-wpp-dark); transform:translateY(-1px); }
   .fk-wlink svg{ flex:none; }
+  /* pílula de destaque do endereço (abre a rota no Google Maps) */
+  .fk-maplink{ display:inline-flex; align-items:center; gap:6px; vertical-align:middle; margin:2px 1px; padding:5px 12px 5px 10px; border-radius:999px; background:var(--fk-teal); color:#fff !important; font-weight:700; font-size:.86em; line-height:1.35; text-decoration:none; box-shadow:0 6px 16px -6px rgba(42,147,184,.85); transition:transform .16s, background .16s; }
+  .fk-maplink:hover{ background:var(--fk-navy); transform:translateY(-1px); }
+  .fk-maplink svg{ flex:none; }
 
   .fk-form{ display:flex; gap:8px; padding:10px 12px 4px; }
   /* font-size 16px evita o zoom automático do iOS ao focar o campo */
@@ -158,8 +162,27 @@
       "</a>"
     );
   }
+  // Endereço da clínica → pílula clicável que abre a rota no Google Maps
+  const MAP_URL =
+    "https://www.google.com/maps/dir/?api=1&destination=R.%20Jurubatuba%2C%20845%2C%20Centro%2C%20S%C3%A3o%20Bernardo%20do%20Campo%20-%20SP";
+  const MAP_ICON =
+    '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20 10c0 6-8 12-8 12s-8-6-8-12a8 8 0 0 1 16 0Z"/><circle cx="12" cy="10" r="3"/></svg>';
+  const MAP_RE = /(?:R\.|Rua)\.?\s*Jurubatuba,?\s*845/gi;
+  function mapPill(m) {
+    return (
+      '<a class="fk-maplink" href="' +
+      MAP_URL +
+      '" target="_blank" rel="noopener">' +
+      MAP_ICON +
+      m +
+      "</a>"
+    );
+  }
   function linkify(text) {
-    return escapeHtml(text).replace(WPP_RE, wppPill);
+    let h = escapeHtml(text);
+    h = h.replace(MAP_RE, mapPill); // endereço -> rota
+    h = h.replace(WPP_RE, wppPill); // whatsapp -> conversa
+    return h;
   }
 
   const root = document.getElementById("fkChat");
