@@ -505,3 +505,14 @@ body.cs-lock .aurora span{animation:none}
 .dn-card p{color:rgba(255,255,255,.82);font-size:.92rem;line-height:1.55}
 @media(max-width:980px){.dn-grid{grid-template-columns:1fr 1fr}}
 @media(max-width:560px){.dn-grid{grid-template-columns:1fr}}
+
+/* ===== seções com fundo azul da marca (intercaladas) ===== */
+.bg-navy{background:linear-gradient(160deg,var(--navy),var(--navy-deep));color:#fff}
+.bg-navy .sec-head h2{color:#fff}
+.bg-navy .sec-head p{color:rgba(255,255,255,.78)}
+.bg-navy .eyebrow{color:var(--sky)}
+.bg-navy .eyebrow::before{background:var(--sky)}
+.bg-navy.cta-strip h2{color:#fff}
+.bg-navy.cta-strip p{color:rgba(255,255,255,.82)}
+/* textura de pontos clara sobre o navy (seção "seu caso") */
+.cs-sec.bg-navy::before{background-image:radial-gradient(rgba(255,255,255,.09) 1px,transparent 1px)}
