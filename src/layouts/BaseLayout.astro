@@ -1,0 +1,100 @@
+---
+import "../styles/global.css";
+import Nav from "../components/Nav.astro";
+import Footer from "../components/Footer.astro";
+import WhatsAppFloat from "../components/WhatsAppFloat.astro";
+
+interface Props {
+  title: string;
+  description: string;
+  canonical: string;
+  ogType?: string;
+  ogTitle?: string;
+  ogDescription?: string;
+  ogImage?: string;
+  twTitle?: string;
+  twDescription?: string;
+  geo?: boolean;
+}
+const IMG = "https://gopimplantes.br/images/gop-og.jpg";
+const {
+  title, description, canonical,
+  ogType = "website",
+  ogTitle = title,
+  ogDescription = description,
+  ogImage = IMG,
+  twTitle = ogTitle,
+  twDescription = ogDescription,
+  geo = false,
+} = Astro.props;
+---
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>{title}</title>
+<meta name="description" content={description} />
+<meta name="author" content="GOP Implantes" />
+<meta name="robots" content="index, follow, max-image-preview:large, max-snippet:-1" />
+{geo && (
+  <Fragment>
+    <meta name="geo.region" content="BR-SP" />
+    <meta name="geo.placename" content="São Bernardo do Campo" />
+    <meta name="geo.position" content="-23.6939;-46.5650" />
+    <meta name="ICBM" content="-23.6939, -46.5650" />
+  </Fragment>
+)}
+<link rel="canonical" href={canonical} />
+<link rel="icon" href="/favicon.svg" type="image/svg+xml" />
+<meta name="theme-color" content="#1b3a53" />
+<meta property="og:type" content={ogType} />
+<meta property="og:locale" content="pt_BR" />
+<meta property="og:site_name" content="GOP Implantes" />
+<meta property="og:url" content={canonical} />
+<meta property="og:title" content={ogTitle} />
+<meta property="og:description" content={ogDescription} />
+<meta property="og:image" content={ogImage} />
+<meta name="twitter:card" content="summary_large_image" />
+<meta name="twitter:title" content={twTitle} />
+<meta name="twitter:description" content={twDescription} />
+<meta name="twitter:image" content={ogImage} />
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&family=Manrope:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+<slot name="head" />
+</head>
+<body>
+<Nav />
+<slot />
+<Footer />
+<WhatsAppFloat />
+<script is:inline>
+// nav scroll state
+const onScroll=()=>document.body.classList.toggle('scrolled',window.scrollY>40);
+window.addEventListener('scroll',onScroll,{passive:true});onScroll();
+
+// reveal on scroll
+const io=new IntersectionObserver((entries)=>{
+  entries.forEach(e=>{if(e.isIntersecting){e.target.classList.add('in');io.unobserve(e.target);}});
+},{threshold:.12,rootMargin:'0px 0px -40px 0px'});
+document.querySelectorAll('.reveal').forEach(el=>io.observe(el));
+
+// hero é a primeira tela: revela seu conteúdo já no carregamento (sem esperar o scroll, p/ não "demorar" no mobile)
+requestAnimationFrame(()=>{
+  document.querySelectorAll('#topo .reveal').forEach(el=>{el.classList.add('in');io.unobserve(el);});
+});
+
+// close mobile menu on link click
+document.querySelectorAll('.nav-links a').forEach(a=>a.addEventListener('click',()=>document.querySelector('.nav-links').classList.remove('open')));
+
+// before/after comparison sliders
+document.querySelectorAll('.ba-range').forEach(r=>{
+  const ba=r.closest('.ba');
+  const sync=()=>ba.style.setProperty('--pos',r.value+'%');
+  r.addEventListener('input',sync);
+  sync();
+});
+</script>
+</body>
+</html>
