@@ -533,3 +533,19 @@ body.cs-lock .aurora span{animation:none}
   /* CTA isolado da nav some no mobile (a hero já tem o botão de agendar) */
   .nav-cta{display:none}
 }
+
+/* ===== conexão local · São Bernardo do Campo ===== */
+.local-grid{display:grid;grid-template-columns:1.02fr .98fr;gap:54px;align-items:center}
+.local-photo{position:relative;margin:0;border-radius:var(--radius);overflow:hidden;box-shadow:var(--shadow);aspect-ratio:4/3}
+.local-photo img{width:100%;height:100%;object-fit:cover;display:block}
+.local-pin{position:absolute;left:16px;bottom:16px;display:inline-flex;align-items:center;gap:7px;background:var(--glass);backdrop-filter:blur(10px);-webkit-backdrop-filter:blur(10px);border:1px solid rgba(255,255,255,.65);border-radius:100px;padding:8px 14px;font-size:.78rem;font-weight:700;color:var(--navy);box-shadow:0 10px 24px -14px rgba(16,41,60,.5)}
+.local-pin svg{color:var(--teal)}
+.local-text h2{font-size:clamp(2rem,4vw,3rem);color:var(--navy-deep);margin:16px 0 18px}
+.local-text p{color:var(--muted);margin-bottom:14px;font-size:1.05rem;line-height:1.75}
+.local-text strong{color:var(--navy);font-weight:700}
+.local-kicker{font-family:'Poppins',sans-serif;color:var(--navy-deep)!important;font-size:1.12rem;font-weight:500;line-height:1.5;margin-top:6px}
+.local-text .btn{margin-top:18px}
+@media(max-width:980px){
+  .local-grid{grid-template-columns:1fr;gap:30px}
+  .local-photo{aspect-ratio:16/10;max-height:440px}
+}
