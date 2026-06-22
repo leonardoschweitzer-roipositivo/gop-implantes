@@ -106,7 +106,8 @@
   .fk-wlink svg{ flex:none; }
 
   .fk-form{ display:flex; gap:8px; padding:10px 12px 4px; }
-  .fk-input{ flex:1; border:1px solid rgba(27,58,83,.18); background:#fff; border-radius:999px; padding:11px 15px; font-family:inherit; font-size:.9rem; color:var(--fk-ink); outline:none; }
+  /* font-size 16px evita o zoom automático do iOS ao focar o campo */
+  .fk-input{ flex:1; min-width:0; border:1px solid rgba(27,58,83,.18); background:#fff; border-radius:999px; padding:10px 15px; font-family:inherit; font-size:16px; color:var(--fk-ink); outline:none; }
   .fk-input:focus{ border-color:var(--fk-teal); }
   .fk-send{ width:42px; height:42px; flex:none; border:none; border-radius:50%; background:var(--fk-navy); color:#fff; cursor:pointer; display:grid; place-items:center; transition:.18s; }
   .fk-send:hover{ background:var(--fk-navy-deep); }
