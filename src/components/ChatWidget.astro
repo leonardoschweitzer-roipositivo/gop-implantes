@@ -97,6 +97,9 @@
   .fk-msg{ max-width:86%; padding:10px 13px; border-radius:16px; font-size:.9rem; line-height:1.5; white-space:pre-wrap; word-wrap:break-word; }
   .fk-msg.bot{ align-self:flex-start; background:#fff; color:var(--fk-ink); border:1px solid rgba(27,58,83,.1); border-bottom-left-radius:6px; }
   .fk-msg.me{ align-self:flex-end; background:var(--fk-navy); color:#fff; border-bottom-right-radius:6px; }
+  .fk-msg .fk-list{ white-space:normal; list-style:disc; margin:6px 0 2px; padding-left:20px; }
+  .fk-msg .fk-list li{ margin:4px 0; line-height:1.45; }
+  .fk-msg .fk-list li::marker{ color:var(--fk-teal); }
   .fk-msg.typing{ color:var(--fk-muted); font-style:italic; }
   .fk-chips{ display:flex; flex-wrap:wrap; gap:8px; margin-top:4px; }
   .fk-chip{ font-family:'Manrope',sans-serif; font-size:.8rem; font-weight:600; line-height:1; padding:9px 14px; border-radius:999px; border:1px solid rgba(27,58,83,.22); background:#fff; color:var(--fk-navy); cursor:pointer; transition:background .18s, color .18s, border-color .18s, box-shadow .18s; }
@@ -179,8 +182,17 @@
       "</a>"
     );
   }
+  // Converte linhas iniciadas por "-", "•" ou "*" em uma lista <ul> estilizada
+  function listify(h) {
+    return h.replace(/(?:^|\n)((?:[ \t]*[-•*][ \t]+[^\n]*(?:\n|$))+)/g, (m, block) =>
+      '\n<ul class="fk-list">' +
+      block.trim().split(/\n/).map((li) => "<li>" + li.replace(/^[ \t]*[-•*][ \t]+/, "") + "</li>").join("") +
+      "</ul>"
+    );
+  }
   function linkify(text) {
     let h = escapeHtml(text);
+    h = listify(h); // listas "- item" -> <ul><li>
     h = h.replace(MAP_RE, mapPill); // endereço -> rota
     h = h.replace(WPP_RE, wppPill); // whatsapp -> conversa
     return h;
