@@ -413,6 +413,8 @@ section{position:relative}
 .cs-meta{display:flex;flex-direction:column;gap:3px;align-items:center}
 .cs-title{font-weight:700;color:var(--navy-deep);font-size:.9rem;text-align:center;line-height:1.2}
 .cs-sub{font-size:.74rem;font-weight:600;color:var(--teal);text-align:center;line-height:1.2}
+.cs-hint{display:none}
+@keyframes csSwipe{0%,100%{transform:translateX(-4px)}50%{transform:translateX(4px)}}
 /* modal */
 .cs-modal{position:fixed;inset:0;z-index:300;display:none;align-items:flex-start;justify-content:center;padding:24px;overflow-y:auto}
 .cs-modal.open{display:flex}
@@ -460,6 +462,8 @@ body.cs-lock .aurora span{animation:none}
   .cs-grid{display:flex;gap:12px;overflow-x:auto;scroll-snap-type:x mandatory;-webkit-overflow-scrolling:touch;padding:2px 2px 14px;scrollbar-width:none}
   .cs-grid::-webkit-scrollbar{display:none}
   .cs-card{flex:0 0 56%;scroll-snap-align:start}
+  .cs-hint{display:flex;align-items:center;justify-content:center;gap:8px;width:100%;margin-top:6px;color:var(--navy);font-size:.82rem;font-weight:600;opacity:.88}
+  .cs-hint svg{color:var(--teal);animation:csSwipe 1.5s ease-in-out infinite}
   .cs-tech{grid-template-columns:1fr}
   .cs-cols{grid-template-columns:1fr}
   .cs-modal-card{padding:28px 22px}
