@@ -77,6 +77,21 @@ function readBlog() {
   return out;
 }
 
+// --- Página inicial (src/pages/index.astro) — texto visível das seções ---
+// Captura FAQ, diferenciais, "quem somos", benefícios, depoimentos, etc.
+// stripHtml já remove <script> (JSON-LD/seletor), <style> e <svg>.
+function readHome() {
+  const file = join(ROOT, "src/pages/index.astro");
+  if (!existsSync(file)) return [];
+  const body = readFileSync(file, "utf8").replace(/^---[\s\S]*?---/, "");
+  const text = stripHtml(body)
+    .replace(/Saiba mais →|Ler artigo →|Arraste para o lado[^\n]*/gi, "")
+    .replace(/[ \t]{2,}/g, " ")
+    .replace(/\n{2,}/g, "\n")
+    .trim();
+  return text ? [`### Conteúdo da página inicial (seções do site)\n${text}`] : [];
+}
+
 const CLINIC = `### Sobre a GOP Implantes
 A GOP Implantes é uma clínica odontológica em São Bernardo do Campo (SP), com mais de 40 anos de experiência no mesmo local. Atende de forma personalizada e humanizada, com profissionais qualificados e tecnologia atual, em diversas áreas da odontologia. Atende toda a família.
 
@@ -92,7 +107,7 @@ Avaliação no Google: 4,4 de 5 (44 avaliações).
 A clínica oferece preços acessíveis e facilidades de pagamento, mas não divulga tabela de preços no site: os valores são definidos após uma avaliação, conforme o caso de cada paciente. A primeira consulta de avaliação é gratuita.`;
 
 export function buildKb() {
-  const parts = [CLINIC, ...readTreatments(), ...readBlog()];
+  const parts = [CLINIC, ...readHome(), ...readTreatments(), ...readBlog()];
   const kb = parts.join("\n\n---\n\n").trim();
   const outFile = join(ROOT, "api/_kb.generated.js");
   const banner =
