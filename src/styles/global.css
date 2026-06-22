@@ -549,3 +549,31 @@ body.cs-lock .aurora span{animation:none}
   .local-grid{grid-template-columns:1fr;gap:30px}
   .local-photo{aspect-ratio:16/10;max-height:440px}
 }
+
+/* ===== destaque de implantes (sub-seção em Serviços) ===== */
+.impl-focus{display:grid;grid-template-columns:1fr 1.05fr;gap:46px;align-items:center;background:var(--sand);border:1px solid var(--line);border-radius:28px;padding:26px;box-shadow:var(--shadow);margin-bottom:64px}
+.impl-photo{margin:0;border-radius:20px;overflow:hidden;aspect-ratio:1;background:linear-gradient(155deg,var(--navy),var(--teal))}
+.impl-photo img{width:100%;height:100%;object-fit:cover;display:block}
+.impl-text{padding:6px 10px}
+.impl-title{font-size:clamp(1.7rem,3.2vw,2.5rem);color:var(--navy-deep);line-height:1.1;margin:12px 0 14px}
+.impl-title em{font-style:normal;color:var(--teal)}
+.impl-lead{color:var(--muted);font-size:1.04rem;line-height:1.7;margin-bottom:24px}
+.impl-benefits{display:grid;grid-template-columns:1fr 1fr;gap:18px 22px;margin-bottom:26px}
+.impl-b{display:flex;gap:12px;align-items:flex-start}
+.impl-ic{flex:none;width:38px;height:38px;border-radius:11px;background:rgba(42,147,184,.12);color:var(--teal);display:grid;place-items:center}
+.impl-b b{display:block;color:var(--navy-deep);font-family:'Poppins',sans-serif;font-weight:600;font-size:.98rem;margin-bottom:2px}
+.impl-b span{color:var(--muted);font-size:.88rem;line-height:1.45}
+.impl-cta{width:100%;justify-content:center;font-size:1rem;padding:16px 28px}
+.impl-stats{display:flex;gap:28px;flex-wrap:wrap;margin-top:24px;padding-top:22px;border-top:1px solid var(--line)}
+.impl-stats>div{display:flex;align-items:center;gap:10px}
+.impl-stat-ic{flex:none;color:var(--teal)}
+.impl-stats b{display:block;font-family:'Poppins',sans-serif;color:var(--navy-deep);font-size:1rem;line-height:1.1}
+.impl-stats small{color:var(--muted);font-size:.78rem}
+.treat-subhead{text-align:center;color:var(--navy-deep);font-size:clamp(1.3rem,2.4vw,1.7rem);margin-bottom:30px}
+@media(max-width:980px){
+  .impl-focus{grid-template-columns:1fr;gap:26px;padding:20px}
+}
+@media(max-width:560px){
+  .impl-benefits{grid-template-columns:1fr}
+  .impl-stats{gap:16px 24px}
+}

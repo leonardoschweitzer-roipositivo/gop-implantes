@@ -133,7 +133,6 @@ import BaseLayout from "../layouts/BaseLayout.astro";
           <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2a10 10 0 0 0-8.6 15l-1.3 4.7 4.8-1.3A10 10 0 1 0 12 2Zm5.3 14.2c-.2.6-1.3 1.2-1.8 1.2-.5.1-1 .1-1.6-.1-.4-.1-.9-.3-1.5-.6-2.7-1.2-4.5-3.9-4.6-4.1-.1-.2-1.1-1.4-1.1-2.7 0-1.3.7-1.9 .9-2.2.2-.2.5-.3.7-.3h.5c.2 0 .4 0 .6.5l.8 1.9c.1.2.1.4 0 .5l-.4.6c-.1.2-.3.3-.1.6.2.3.8 1.3 1.7 2 .8.5 1.1.6 1.4.5.2-.1.4-.4.6-.7.2-.3.4-.2.6-.2l1.7.8c.2.1.4.2.4.4.1.2.1.9-.1 1.5Z"/></svg>
           Quero agendar minha consulta
         </a>
-        <a href="#tratamentos" class="btn btn-ghost">Ver serviços</a>
       </div>
       <a href="https://www.google.com/maps/search/?api=1&query=GOP+Implantes+S%C3%A3o+Bernardo+do+Campo" class="hero-rating reveal d3" target="_blank" rel="noopener" aria-label="Nota 4,3 de 5 em 28 avaliações no Google">
         <svg width="18" height="18" viewBox="0 0 48 48" aria-hidden="true"><path fill="#FFC107" d="M43.6 20.5H42V20H24v8h11.3c-1.6 4.7-6.1 8-11.3 8-6.6 0-12-5.4-12-12s5.4-12 12-12c3.1 0 5.9 1.2 8 3.1l5.7-5.7C34 6.5 29.3 4.5 24 4.5 13.2 4.5 4.5 13.2 4.5 24S13.2 43.5 24 43.5c10.7 0 19.5-8.7 19.5-19.5 0-1.3-.1-2.3-.4-3.5z"/><path fill="#FF3D00" d="M6.3 14.7l6.6 4.8C14.7 16 19 12.5 24 12.5c3.1 0 5.9 1.2 8 3.1l5.7-5.7C34 6.5 29.3 4.5 24 4.5 16.3 4.5 9.7 8.9 6.3 14.7z"/><path fill="#4CAF50" d="M24 43.5c5.2 0 9.9-2 13.4-5.2l-6.2-5.2c-2 1.5-4.6 2.4-7.2 2.4-5.2 0-9.6-3.3-11.3-7.9l-6.5 5C9.6 39 16.2 43.5 24 43.5z"/><path fill="#1976D2" d="M43.6 20.5H42V20H24v8h11.3c-.8 2.3-2.2 4.2-4.1 5.6l6.2 5.2C39.9 36.5 43.5 30.8 43.5 24c0-1.3-.1-2.3-.4-3.5z"/></svg>
@@ -200,13 +199,48 @@ import BaseLayout from "../layouts/BaseLayout.astro";
       <h2>Cuidado completo para um sorriso saudável e atraente</h2>
       <p>Seu sorriso é a nossa prioridade — oferecemos cuidados odontológicos profissionais e personalizados para melhorar a sua saúde, autoconfiança e bem-estar.</p>
     </div>
-    <div class="treat-grid">
-      <div class="treat-card feat reveal">
-        <div class="ti"><svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M12 2c3 0 5 2 5 5 0 2-1 3-1 6 0 4-1 9-2 9s-1-4-2-4-1 4-2 4-2-5-2-9c0-3-1-4-1-6 0-3 2-5 5-5Z"/></svg></div>
-        <h3>Implantes</h3>
-        <p>Recupere a beleza e a funcionalidade do seu sorriso com implantes dentários de alta qualidade.</p>
-        <a href="tratamentos/implantes.html" class="more">Saiba mais →</a>
+
+    <!-- DESTAQUE: IMPLANTES — a especialidade da GOP -->
+    <div class="impl-focus reveal">
+      <figure class="impl-photo">
+        <img src="images/implante-dentario.jpg" alt="Implante dentário — pino de titânio entre os dentes, em close" loading="lazy" onerror="this.remove()">
+      </figure>
+      <div class="impl-text">
+        <span class="eyebrow">Nossa especialidade</span>
+        <h3 class="impl-title">Implantes Dentários: <em>a solução definitiva</em></h3>
+        <p class="impl-lead">Chega de soluções temporárias. O implante dentário é o padrão ouro da odontologia moderna para repor dentes perdidos, devolvendo conforto, mastigação e a estética do seu sorriso.</p>
+        <div class="impl-benefits">
+          <div class="impl-b">
+            <span class="impl-ic"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2 4 5v6c0 5 3.5 9 8 11 4.5-2 8-6 8-11V5l-8-3Z"/><path d="m9 12 2 2 4-4"/></svg></span>
+            <div><b>Dentes fixos e naturais</b><span>Recupere a sensação de ter os seus próprios dentes de volta.</span></div>
+          </div>
+          <div class="impl-b">
+            <span class="impl-ic"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M3 2v7c0 1.1.9 2 2 2a2 2 0 0 0 2-2V2"/><path d="M7 2v20"/><path d="M21 15V2a5 5 0 0 0-3 4.6V12a3 3 0 0 0 3 3Zm0 0v7"/></svg></span>
+            <div><b>Coma o que quiser</b><span>Mastigue maçãs, carnes e castanhas sem medo ou dor.</span></div>
+          </div>
+          <div class="impl-b">
+            <span class="impl-ic"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M8 14s1.5 2 4 2 4-2 4-2"/><path d="M9 9h.01"/><path d="M15 9h.01"/></svg></span>
+            <div><b>Autoestima renovada</b><span>Sorria para as fotos e converse sem a mão na frente da boca.</span></div>
+          </div>
+          <div class="impl-b">
+            <span class="impl-ic"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M13 2 3 14h7l-1 8 10-12h-7l1-8Z"/></svg></span>
+            <div><b>Durabilidade</b><span>Uma solução definitiva que, bem cuidada, pode durar a vida toda.</span></div>
+          </div>
+        </div>
+        <a href="https://wa.me/5511985140604" class="btn btn-primary impl-cta" target="_blank" rel="noopener">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2a10 10 0 0 0-8.6 15l-1.3 4.7 4.8-1.3A10 10 0 1 0 12 2Zm5.3 14.2c-.2.6-1.3 1.2-1.8 1.2-.5.1-1 .1-1.6-.1-.4-.1-.9-.3-1.5-.6-2.7-1.2-4.5-3.9-4.6-4.1-.1-.2-1.1-1.4-1.1-2.7 0-1.3.7-1.9 .9-2.2.2-.2.5-.3.7-.3h.5c.2 0 .4 0 .6.5l.8 1.9c.1.2.1.4 0 .5l-.4.6c-.1.2-.3.3-.1.6.2.3.8 1.3 1.7 2 .8.5 1.1.6 1.4.5.2-.1.4-.4.6-.7.2-.3.4-.2.6-.2l1.7.8c.2.1.4.2.4.4.1.2.1.9-.1 1.5Z"/></svg>
+          Quero simular meu orçamento
+        </a>
+        <div class="impl-stats">
+          <div><span class="impl-stat-ic"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="8" r="6"/><path d="M8.2 13.5 7 22l5-3 5 3-1.2-8.5"/></svg></span><div><b>+35 anos</b><small>de experiência</small></div></div>
+          <div><span class="impl-stat-ic"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="12" cy="12" r="9"/><circle cx="12" cy="12" r="4"/></svg></span><div><b>Alta precisão</b><small>tecnologia 3D</small></div></div>
+          <div><span class="impl-stat-ic"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/></svg></span><div><b>Carga imediata</b><small>em casos indicados</small></div></div>
+        </div>
       </div>
+    </div>
+
+    <h3 class="treat-subhead reveal">E cuidamos de todo o resto do seu sorriso</h3>
+    <div class="treat-grid">
       <div class="treat-card reveal d1">
         <div class="ti"><svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M12 2 2 7l10 5 10-5-10-5Z"/><path d="m2 17 10 5 10-5"/><path d="m2 12 10 5 10-5"/></svg></div>
         <h3>Prótese</h3>
