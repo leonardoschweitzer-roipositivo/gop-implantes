@@ -16,10 +16,10 @@
   <div id="fkChatPanel" class="fk-panel" role="dialog" aria-label="Chat GOP Implantes" hidden>
     <div class="fk-head">
       <div class="fk-head-id">
-        <span class="fk-avatar">G</span>
+        <span class="fk-avatar"><img src="/images/equipe/secretaria-gop-implantes-ia.jpg" alt="Sofia, assistente virtual da GOP Implantes"></span>
         <div>
-          <strong>GOP Implantes</strong>
-          <small>Assistente virtual</small>
+          <strong>Sofia</strong>
+          <small>Assistente virtual · GOP Implantes</small>
         </div>
       </div>
       <button id="fkChatClose" class="fk-x" aria-label="Fechar">
@@ -86,7 +86,8 @@
     background:linear-gradient(135deg,var(--fk-navy),var(--fk-teal));
   }
   .fk-head-id{ display:flex; align-items:center; gap:11px; }
-  .fk-avatar{ width:40px; height:40px; border-radius:50%; background:rgba(255,255,255,.18); display:grid; place-items:center; font-family:'Poppins',sans-serif; font-weight:700; font-size:1rem; }
+  .fk-avatar{ width:42px; height:42px; border-radius:50%; background:rgba(255,255,255,.18); display:grid; place-items:center; overflow:hidden; flex:none; font-family:'Poppins',sans-serif; font-weight:700; font-size:1rem; }
+  .fk-avatar img{ width:100%; height:100%; object-fit:cover; display:block; }
   .fk-head strong{ display:block; font-family:'Poppins',sans-serif; font-weight:600; font-size:1.02rem; }
   .fk-head small{ opacity:.85; font-size:.72rem; }
   .fk-x{ background:none; border:none; color:#fff; cursor:pointer; opacity:.85; padding:4px; line-height:0; }
@@ -132,7 +133,7 @@
   const WPP_URL = "https://wa.me/5511985140604";
   const WPP_DISPLAY = "(11) 98514-0604";
   const GREETING =
-    "Olá! 👋 Sou a assistente virtual da GOP Implantes. Posso tirar dúvidas sobre nossos tratamentos (implantes, prótese, ortodontia, alinhadores e mais) ou sobre a clínica. Como posso ajudar?";
+    "Olá! 👋 Sou a Sofia, assistente virtual da GOP Implantes. Posso tirar dúvidas sobre nossos tratamentos (implantes, prótese, ortodontia, alinhadores e mais) ou sobre a clínica. Como posso ajudar?";
   const SUGGESTIONS = [
     "O que são implantes dentários?",
     "Vocês fazem alinhadores invisíveis?",
