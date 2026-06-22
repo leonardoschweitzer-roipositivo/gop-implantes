@@ -88,7 +88,7 @@ Contato e localização:
 - Instagram: @gopimplantes
 - Atendimento com hora marcada.
 
-Avaliação no Google: 4,3 de 5 (28 avaliações).
+Avaliação no Google: 4,4 de 5 (44 avaliações).
 A clínica oferece preços acessíveis e facilidades de pagamento, mas não divulga tabela de preços no site: os valores são definidos após uma avaliação, conforme o caso de cada paciente. A primeira consulta de avaliação é gratuita.`;
 
 export function buildKb() {
