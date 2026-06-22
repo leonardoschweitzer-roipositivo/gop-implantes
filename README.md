@@ -75,6 +75,7 @@ As seções com foto usam **placeholders em gradiente** (com legendas) — as im
 - **Foto hero** → `public/images/imagem-hero.jpg` (paciente sorrindo). Adicione `onerror` já está pronto: enquanto não houver foto, aparece o card em gradiente.
 - **Galeria "Quem somos"** → `public/images/clinica/*.jpg` (recepção, consultórios, etc.).
 - **Equipe** → `public/images/equipe.jpg`.
+- **3 dentistas da hero** → `public/images/equipe/dentista-1.jpg`, `dentista-2.jpg`, `dentista-3.jpg` (fotos 3:4). Trocar também os nomes/especialidades dos cards na hero em `src/pages/index.astro` (hoje rotulados por área: Implantes & Protocolo, Ortodontia, Harmonização & Estética).
 - **Antes & Depois** → `public/images/casos/*` (pares antes/depois).
 - **Capas do blog** → `public/images/blog/<slug>.jpg`.
 - **Imagem de compartilhamento (Open Graph)** → `public/images/gop-og.jpg` (1200×630).

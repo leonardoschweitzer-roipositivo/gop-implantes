@@ -15,6 +15,7 @@ interface Props {
   twTitle?: string;
   twDescription?: string;
   geo?: boolean;
+  heroDark?: boolean;
 }
 const IMG = "https://gopimplantes.br/images/gop-og.jpg";
 const {
@@ -26,6 +27,7 @@ const {
   twTitle = ogTitle,
   twDescription = ogDescription,
   geo = false,
+  heroDark = false,
 } = Astro.props;
 ---
 <!doctype html>
@@ -64,7 +66,7 @@ const {
 <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&family=Manrope:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
 <slot name="head" />
 </head>
-<body>
+<body class={heroDark ? "has-dark-hero" : undefined}>
 <Nav />
 <slot />
 <Footer />
