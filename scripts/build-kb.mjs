@@ -78,7 +78,7 @@ function readBlog() {
 }
 
 const CLINIC = `### Sobre a GOP Implantes
-A GOP Implantes é uma clínica odontológica em São Bernardo do Campo (SP), com mais de 35 anos de experiência em odontologia. Atende de forma personalizada e humanizada, com profissionais qualificados e tecnologia atual, em diversas áreas da odontologia. Atende toda a família.
+A GOP Implantes é uma clínica odontológica em São Bernardo do Campo (SP), com mais de 40 anos de experiência no mesmo local. Atende de forma personalizada e humanizada, com profissionais qualificados e tecnologia atual, em diversas áreas da odontologia. Atende toda a família.
 
 Áreas e tratamentos: Implantes dentários e protocolo, Prótese dentária, Ortodontia, Endodontia (tratamento de canal), Periodontia, Alinhadores invisíveis, Harmonização facial, Facetas e lentes dentais, Odontologia digital e Dentística restauradora.
 
