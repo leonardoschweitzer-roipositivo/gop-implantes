@@ -23,7 +23,7 @@ body{
   overflow-x:hidden;
   -webkit-font-smoothing:antialiased;
 }
-h1,h2,h3,h4{font-family:'Poppins',serif;font-weight:500;line-height:1.08;letter-spacing:-.01em}
+h1,h2,h3,h4{font-family:'Poppins',sans-serif;font-weight:500;line-height:1.08;letter-spacing:-.01em}
 a{text-decoration:none;color:inherit}
 img{max-width:100%;display:block}
 .wrap{max-width:1180px;margin:0 auto;padding:0 28px}
@@ -49,7 +49,7 @@ img{max-width:100%;display:block}
 }
 body.scrolled .nav-shell{height:74px;border-bottom:1px solid var(--line)}
 body.scrolled .nav{padding-top:14px;padding-bottom:14px}
-.logo{display:flex;align-items:center;gap:12px;font-family:'Poppins',serif;font-size:1.4rem;color:var(--navy)}
+.logo{display:flex;align-items:center;gap:12px;font-family:'Poppins',sans-serif;font-size:1.4rem;color:var(--navy)}
 .logo .mark{
   width:42px;height:42px;border-radius:50%;
   background:linear-gradient(135deg,var(--navy),var(--teal));
@@ -136,7 +136,7 @@ body.has-dark-hero .nav-links.open a{color:#fff}
 /* ---------- MARQUEE ---------- */
 .marquee{background:var(--navy);color:#fff;padding:18px 0;overflow:hidden;white-space:nowrap}
 .marquee-track{display:inline-flex;gap:48px;animation:scroll 28s linear infinite;will-change:transform}
-.marquee-track span{font-family:'Poppins';font-size:1.2rem;font-style:italic;opacity:.92;display:inline-flex;align-items:center;gap:48px}
+.marquee-track span{font-family:'Poppins',sans-serif;font-size:1.2rem;font-style:italic;opacity:.92;display:inline-flex;align-items:center;gap:48px}
 .marquee-track span::after{content:"✦";color:var(--sky);font-style:normal}
 @keyframes scroll{from{transform:translateX(0)}to{transform:translateX(-50%)}}
 
@@ -366,9 +366,9 @@ section{position:relative}
 .reveal{opacity:0;transform:translateY(20px);transition:opacity .45s ease-out,transform .45s ease-out}
 .reveal.in{opacity:1;transform:none}
 .reveal.d1{transition-delay:.05s}.reveal.d2{transition-delay:.1s}.reveal.d3{transition-delay:.15s}.reveal.d4{transition-delay:.2s}
-/* no mobile o conteúdo aparece imediatamente — sem reveal por scroll, p/ os
-   cards (e o resto) nunca "demorarem" ao rolar. O fade fica só no desktop. */
-@media(max-width:600px){
+/* em celular E tablet o conteúdo aparece imediatamente — sem reveal por scroll,
+   p/ os cards (e o resto) nunca "demorarem" ao rolar. O fade fica só no desktop. */
+@media(max-width:980px){
   .reveal{opacity:1;transform:none}
 }
 
