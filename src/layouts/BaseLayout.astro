@@ -79,7 +79,7 @@ window.addEventListener('scroll',onScroll,{passive:true});onScroll();
 // reveal on scroll
 const io=new IntersectionObserver((entries)=>{
   entries.forEach(e=>{if(e.isIntersecting){e.target.classList.add('in');io.unobserve(e.target);}});
-},{threshold:.12,rootMargin:'0px 0px -40px 0px'});
+},{threshold:0,rootMargin:'0px 0px 100px 0px'});
 document.querySelectorAll('.reveal').forEach(el=>io.observe(el));
 
 // hero é a primeira tela: revela seu conteúdo já no carregamento (sem esperar o scroll, p/ não "demorar" no mobile)

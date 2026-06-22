@@ -363,9 +363,14 @@ section{position:relative}
 @keyframes pulse{0%{box-shadow:0 16px 36px -12px rgba(37,211,102,.6),0 0 0 0 rgba(37,211,102,.5)}70%{box-shadow:0 16px 36px -12px rgba(37,211,102,.6),0 0 0 16px rgba(37,211,102,0)}100%{box-shadow:0 16px 36px -12px rgba(37,211,102,.6),0 0 0 0 rgba(37,211,102,0)}}
 
 /* reveal */
-.reveal{opacity:0;transform:translateY(36px);transition:.9s cubic-bezier(.16,1,.3,1)}
+.reveal{opacity:0;transform:translateY(26px);transition:.55s cubic-bezier(.16,1,.3,1)}
 .reveal.in{opacity:1;transform:none}
-.reveal.d1{transition-delay:.1s}.reveal.d2{transition-delay:.2s}.reveal.d3{transition-delay:.3s}.reveal.d4{transition-delay:.4s}
+.reveal.d1{transition-delay:.08s}.reveal.d2{transition-delay:.16s}.reveal.d3{transition-delay:.24s}.reveal.d4{transition-delay:.32s}
+/* no mobile: anima mais rápido e sem escalonamento (evita sensação de atraso ao rolar) */
+@media(max-width:600px){
+  .reveal{transform:translateY(18px);transition-duration:.4s}
+  .reveal.d1,.reveal.d2,.reveal.d3,.reveal.d4{transition-delay:0s}
+}
 
 /* responsive */
 @media(max-width:980px){
