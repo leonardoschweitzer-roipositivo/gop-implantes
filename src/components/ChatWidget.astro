@@ -1,0 +1,243 @@
+---
+// Chat flutuante com IA. Vanilla (sem framework), no design system do site.
+// Fica embaixo à esquerda para não colidir com o botão do WhatsApp (à direita).
+---
+<div id="fkChat" class="fk-chat">
+  <!-- Botão flutuante -->
+  <button id="fkChatFab" class="fk-fab" aria-label="Abrir chat — tire suas dúvidas" aria-expanded="false">
+    <svg class="fk-ic-chat" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M21 11.5a8.38 8.38 0 0 1-.9 3.8 8.5 8.5 0 0 1-7.6 4.7 8.38 8.38 0 0 1-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 0 1-.9-3.8 8.5 8.5 0 0 1 4.7-7.6 8.38 8.38 0 0 1 3.8-.9h.5a8.48 8.48 0 0 1 8 8v.5Z"/></svg>
+    <svg class="fk-ic-close" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2" stroke-linecap="round"><path d="M18 6 6 18M6 6l12 12"/></svg>
+    <span class="fk-fab-label">Tire Dúvidas Aqui</span>
+  </button>
+
+  <!-- Painel -->
+  <div id="fkChatPanel" class="fk-panel" role="dialog" aria-label="Chat GOP Implantes" hidden>
+    <div class="fk-head">
+      <div class="fk-head-id">
+        <span class="fk-avatar">G</span>
+        <div>
+          <strong>GOP Implantes</strong>
+          <small>Assistente virtual</small>
+        </div>
+      </div>
+      <button id="fkChatClose" class="fk-x" aria-label="Fechar">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M18 6 6 18M6 6l12 12"/></svg>
+      </button>
+    </div>
+
+    <div id="fkChatLog" class="fk-log" aria-live="polite"></div>
+
+    <form id="fkChatForm" class="fk-form" autocomplete="off">
+      <input id="fkChatInput" class="fk-input" type="text" placeholder="Escreva sua dúvida…" maxlength="500" aria-label="Sua mensagem" />
+      <button class="fk-send" type="submit" aria-label="Enviar">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="m22 2-7 20-4-9-9-4 20-7Z"/></svg>
+      </button>
+    </form>
+    <a class="fk-wpp" href="https://wa.me/5511985140604" target="_blank" rel="noopener">Prefere falar no WhatsApp? (11) 98514-0604</a>
+  </div>
+</div>
+
+<style is:global>
+  /* is:global porque as bolhas de mensagem e os chips de sugestão são criados
+     via JS em runtime — o estilo scoped do Astro não os alcançaria. Tudo é
+     prefixado fk- e vive dentro de #fkChat, então não vaza pro resto do site. */
+  .fk-chat{ --fk-navy:#1b3a53; --fk-navy-deep:#10293c; --fk-teal:#2a93b8; --fk-ink:#152935; --fk-muted:#5b7180; --fk-cream:#f8fbfd; --fk-sand:#eef3f7; font-family:'Manrope',sans-serif; }
+  .fk-fab{
+    position:fixed; left:22px; bottom:22px; z-index:120;
+    height:56px; border:none; border-radius:999px; cursor:pointer;
+    padding:0 20px 0 16px;
+    background:linear-gradient(135deg,var(--fk-navy),var(--fk-teal));
+    box-shadow:0 14px 30px -10px rgba(16,41,60,.6);
+    display:inline-flex; align-items:center; gap:9px;
+    transition:transform .25s, box-shadow .25s, padding .2s;
+  }
+  .fk-fab:hover{ transform:translateY(-2px) scale(1.03); box-shadow:0 18px 36px -12px rgba(16,41,60,.7); }
+  .fk-fab-label{ font-family:'Manrope',sans-serif; font-weight:700; font-size:.92rem; letter-spacing:.005em; color:#fff; white-space:nowrap; }
+  .fk-fab .fk-ic-close{ display:none; }
+  .fk-chat.open .fk-fab{ width:56px; padding:0; justify-content:center; }
+  .fk-chat.open .fk-fab .fk-ic-chat{ display:none; }
+  .fk-chat.open .fk-fab-label{ display:none; }
+  .fk-chat.open .fk-fab .fk-ic-close{ display:block; }
+
+  .fk-panel{
+    position:fixed; left:22px; bottom:94px; z-index:120;
+    width:370px; max-width:calc(100vw - 32px); height:540px; max-height:calc(100vh - 130px);
+    background:var(--fk-cream); border:1px solid rgba(27,58,83,.14); border-radius:22px;
+    box-shadow:0 30px 70px -28px rgba(16,41,60,.55); overflow:hidden;
+    display:flex; flex-direction:column;
+    transform-origin:left bottom; animation:fkIn .22s cubic-bezier(.2,.8,.2,1);
+  }
+  .fk-panel[hidden]{ display:none; }
+  @keyframes fkIn{ from{ opacity:0; transform:translateY(12px) scale(.97); } to{ opacity:1; transform:none; } }
+
+  .fk-head{
+    display:flex; align-items:center; justify-content:space-between; gap:10px;
+    padding:14px 16px; color:#fff;
+    background:linear-gradient(135deg,var(--fk-navy),var(--fk-teal));
+  }
+  .fk-head-id{ display:flex; align-items:center; gap:11px; }
+  .fk-avatar{ width:40px; height:40px; border-radius:50%; background:rgba(255,255,255,.18); display:grid; place-items:center; font-family:'Poppins',sans-serif; font-weight:700; font-size:1rem; }
+  .fk-head strong{ display:block; font-family:'Poppins',sans-serif; font-weight:600; font-size:1.02rem; }
+  .fk-head small{ opacity:.85; font-size:.72rem; }
+  .fk-x{ background:none; border:none; color:#fff; cursor:pointer; opacity:.85; padding:4px; line-height:0; }
+  .fk-x:hover{ opacity:1; }
+
+  .fk-log{ flex:1; overflow-y:auto; padding:16px; display:flex; flex-direction:column; gap:10px; }
+  .fk-msg{ max-width:86%; padding:10px 13px; border-radius:16px; font-size:.9rem; line-height:1.5; white-space:pre-wrap; word-wrap:break-word; }
+  .fk-msg.bot{ align-self:flex-start; background:#fff; color:var(--fk-ink); border:1px solid rgba(27,58,83,.1); border-bottom-left-radius:6px; }
+  .fk-msg.me{ align-self:flex-end; background:var(--fk-navy); color:#fff; border-bottom-right-radius:6px; }
+  .fk-msg.typing{ color:var(--fk-muted); font-style:italic; }
+  .fk-chips{ display:flex; flex-wrap:wrap; gap:8px; margin-top:4px; }
+  .fk-chip{ font-family:'Manrope',sans-serif; font-size:.8rem; font-weight:600; line-height:1; padding:9px 14px; border-radius:999px; border:1px solid rgba(27,58,83,.22); background:#fff; color:var(--fk-navy); cursor:pointer; transition:background .18s, color .18s, border-color .18s, box-shadow .18s; }
+  .fk-chip:hover{ background:var(--fk-navy); border-color:var(--fk-navy); color:#fff; box-shadow:0 8px 18px -10px rgba(16,41,60,.6); }
+
+  .fk-form{ display:flex; gap:8px; padding:10px 12px 4px; }
+  .fk-input{ flex:1; border:1px solid rgba(27,58,83,.18); background:#fff; border-radius:999px; padding:11px 15px; font-family:inherit; font-size:.9rem; color:var(--fk-ink); outline:none; }
+  .fk-input:focus{ border-color:var(--fk-teal); }
+  .fk-send{ width:42px; height:42px; flex:none; border:none; border-radius:50%; background:var(--fk-navy); color:#fff; cursor:pointer; display:grid; place-items:center; transition:.18s; }
+  .fk-send:hover{ background:var(--fk-navy-deep); }
+  .fk-send:disabled{ opacity:.5; cursor:default; }
+  .fk-wpp{ display:block; text-align:center; padding:6px 12px 12px; font-size:.74rem; color:var(--fk-muted); }
+  .fk-wpp:hover{ color:var(--fk-navy); }
+
+  @media (max-width:560px){
+    .fk-panel{ left:8px; right:8px; width:auto; bottom:88px; height:calc(100vh - 120px); }
+    .fk-fab{ left:16px; bottom:16px; }
+  }
+  @media (prefers-reduced-motion:reduce){ .fk-panel{ animation:none; } .fk-fab{ transition:none; } }
+</style>
+
+<script>
+  const WPP_URL = "https://wa.me/5511985140604";
+  const GREETING =
+    "Olá! 👋 Sou a assistente virtual da GOP Implantes. Posso tirar dúvidas sobre nossos tratamentos (implantes, prótese, ortodontia, alinhadores e mais) ou sobre a clínica. Como posso ajudar?";
+  const SUGGESTIONS = [
+    "O que são implantes dentários?",
+    "Vocês fazem alinhadores invisíveis?",
+    "Onde fica a clínica?",
+    "Quero agendar",
+  ];
+
+  const root = document.getElementById("fkChat");
+  const fab = document.getElementById("fkChatFab");
+  const panel = document.getElementById("fkChatPanel");
+  const closeBtn = document.getElementById("fkChatClose");
+  const log = document.getElementById("fkChatLog");
+  const form = document.getElementById("fkChatForm");
+  const input = document.getElementById("fkChatInput");
+  const sendBtn = form.querySelector(".fk-send");
+
+  const history = []; // {role:'user'|'model', text}
+  let started = false;
+  let busy = false;
+
+  function scrollDown() {
+    log.scrollTop = log.scrollHeight;
+  }
+  function addMsg(text, who) {
+    const el = document.createElement("div");
+    el.className = "fk-msg " + (who === "me" ? "me" : "bot");
+    el.textContent = text;
+    log.appendChild(el);
+    scrollDown();
+    return el;
+  }
+  function addChips() {
+    const wrap = document.createElement("div");
+    wrap.className = "fk-chips";
+    SUGGESTIONS.forEach((s) => {
+      const b = document.createElement("button");
+      b.type = "button";
+      b.className = "fk-chip";
+      b.textContent = s;
+      b.addEventListener("click", () => {
+        wrap.remove();
+        sendMessage(s);
+      });
+      wrap.appendChild(b);
+    });
+    log.appendChild(wrap);
+    scrollDown();
+  }
+
+  function open() {
+    panel.hidden = false;
+    root.classList.add("open");
+    fab.setAttribute("aria-expanded", "true");
+    if (!started) {
+      started = true;
+      addMsg(GREETING, "bot");
+      addChips();
+    }
+    setTimeout(() => input.focus(), 50);
+  }
+  function close() {
+    panel.hidden = true;
+    root.classList.remove("open");
+    fab.setAttribute("aria-expanded", "false");
+  }
+  fab.addEventListener("click", () => (panel.hidden ? open() : close()));
+  closeBtn.addEventListener("click", close);
+  document.addEventListener("keydown", (e) => {
+    if (e.key === "Escape" && !panel.hidden) close();
+  });
+
+  async function sendMessage(text) {
+    text = (text || "").trim();
+    if (!text || busy) return;
+    busy = true;
+    sendBtn.disabled = true;
+    input.value = "";
+
+    addMsg(text, "me");
+    history.push({ role: "user", text });
+
+    const typing = addMsg("digitando…", "bot");
+    typing.classList.add("typing");
+
+    try {
+      const res = await fetch("/api/chat", {
+        method: "POST",
+        headers: { "content-type": "application/json" },
+        body: JSON.stringify({ messages: history }),
+      });
+      if (!res.ok || !res.body) throw new Error("HTTP " + res.status);
+
+      const reader = res.body.getReader();
+      const dec = new TextDecoder();
+      let acc = "";
+      let first = true;
+      while (true) {
+        const { value, done } = await reader.read();
+        if (done) break;
+        acc += dec.decode(value, { stream: true });
+        if (first) {
+          typing.classList.remove("typing");
+          first = false;
+        }
+        typing.textContent = acc;
+        scrollDown();
+      }
+      if (!acc) {
+        typing.classList.remove("typing");
+        typing.textContent =
+          "Desculpe, não consegui responder agora. Fale no WhatsApp (11) 98514-0604.";
+      }
+      history.push({ role: "model", text: acc });
+    } catch (err) {
+      typing.classList.remove("typing");
+      typing.innerHTML =
+        'Tive um problema de conexão. Você pode falar com a clínica no ' +
+        '<a href="' + WPP_URL + '" target="_blank" rel="noopener" style="color:var(--fk-navy);text-decoration:underline">WhatsApp (11) 98514-0604</a>.';
+    } finally {
+      busy = false;
+      sendBtn.disabled = false;
+      input.focus();
+    }
+  }
+
+  form.addEventListener("submit", (e) => {
+    e.preventDefault();
+    sendMessage(input.value);
+  });
+</script>

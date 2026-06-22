@@ -3,6 +3,7 @@ import "../styles/global.css";
 import Nav from "../components/Nav.astro";
 import Footer from "../components/Footer.astro";
 import WhatsAppFloat from "../components/WhatsAppFloat.astro";
+import ChatWidget from "../components/ChatWidget.astro";
 
 interface Props {
   title: string;
@@ -71,6 +72,7 @@ const {
 <slot />
 <Footer />
 <WhatsAppFloat />
+<ChatWidget />
 <script is:inline>
 // nav scroll state
 const onScroll=()=>document.body.classList.toggle('scrolled',window.scrollY>40);

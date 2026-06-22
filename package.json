@@ -5,6 +5,8 @@
   "private": true,
   "scripts": {
     "dev": "astro dev",
+    "build:kb": "node scripts/build-kb.mjs",
+    "prebuild": "node scripts/build-kb.mjs",
     "build": "astro build",
     "preview": "astro preview"
   },

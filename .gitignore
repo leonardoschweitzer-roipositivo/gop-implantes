@@ -9,6 +9,9 @@ node_modules/
 # logs / env
 npm-debug.log*
 .env
+.env.local
 .env.production
 # vercel
 .vercel
+# KB do chat (gerada no build a partir do conteúdo do site)
+api/_kb.generated.js
