@@ -558,7 +558,7 @@ body.cs-lock .aurora span{animation:none}
 }
 
 /* ===== destaque de implantes (sub-seção em Serviços) ===== */
-.impl-focus{display:grid;grid-template-columns:1fr 1.05fr;gap:46px;align-items:center;background:var(--sand);border:1px solid var(--line);border-radius:28px;padding:26px;box-shadow:var(--shadow);margin-bottom:64px}
+.impl-focus{display:grid;grid-template-columns:316px 1fr;gap:40px;align-items:center;background:var(--sand);border:1px solid var(--line);border-radius:28px;padding:26px 30px;box-shadow:var(--shadow);margin-bottom:64px}
 .impl-photo{margin:0;border-radius:20px;overflow:hidden;aspect-ratio:1;background:linear-gradient(155deg,var(--navy),var(--teal))}
 .impl-photo img{width:100%;height:100%;object-fit:cover;display:block}
 /* quando a foto vira vídeo (reel vertical) */
