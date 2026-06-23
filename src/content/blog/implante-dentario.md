@@ -4,6 +4,7 @@ description: "Do planejamento à prótese fixa: entenda cada etapa do tratamento
 category: "Reabilitação"
 readTime: "6 min de leitura"
 date: "2026-06-22"
+image: "/images/artigos/imagem-artigo-implantes-dentarios.jpg"
 ctaTitle: "Pronto para recuperar o seu sorriso?"
 ctaText: "Agende uma avaliação de implantes na GOP Implantes, em São Bernardo do Campo."
 ---

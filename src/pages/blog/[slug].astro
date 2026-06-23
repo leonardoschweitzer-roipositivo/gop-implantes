@@ -13,7 +13,7 @@ const data = post.data;
 
 const base = "https://gopimplantes.br";
 const url = `${base}/blog/${post.id}.html`;
-const img = `${base}/images/blog/${post.id}.jpg`;
+const img = data.image ? `${base}${data.image}` : `${base}/images/blog/${post.id}.jpg`;
 
 const jsonld = {
   "@context": "https://schema.org",
@@ -69,7 +69,7 @@ const jsonld = {
         <span><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/></svg>{data.readTime}</span>
         <span>Por GOP Implantes</span>
       </div>
-      <div class="art-cover"><img src={`/images/blog/${post.id}.jpg`} alt={data.title} loading="lazy" onerror="this.remove()" /></div>
+      <div class="art-cover"><img src={data.image ?? `/images/blog/${post.id}.jpg`} alt={data.title} loading="lazy" onerror="this.remove()" /></div>
       <div class="prose">
         <Content />
         <div class="art-cta">

@@ -4,6 +4,7 @@ description: "O protocolo sobre implantes devolve dentes fixos a quem usa dentad
 category: "Reabilitação"
 readTime: "5 min de leitura"
 date: "2026-06-22"
+image: "/images/artigos/imagem-artigo-protese-protocolo-implantes.jpg"
 ctaTitle: "Cansou da dentadura solta?"
 ctaText: "Agende uma avaliação na GOP Implantes e descubra se o protocolo é para você."
 ---

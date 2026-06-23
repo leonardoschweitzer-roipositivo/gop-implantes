@@ -4,6 +4,7 @@ description: "Placas transparentes e removíveis que alinham os dentes com discr
 category: "Ortodontia"
 readTime: "5 min de leitura"
 date: "2026-06-22"
+image: "/images/artigos/imagem-artigo-alinhadores-invisiveis.jpg"
 ctaTitle: "Quer alinhar o sorriso com discrição?"
 ctaText: "Agende uma avaliação na GOP Implantes e descubra se os alinhadores são para você."
 ---
