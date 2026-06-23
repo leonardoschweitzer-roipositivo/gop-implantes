@@ -1,0 +1,57 @@
+---
+// Bloco/CTA reaproveitável que abre o quiz de lead (LeadQuiz) já pré-preenchido.
+// O LeadQuiz vem global pelo BaseLayout. Use em qualquer página:
+//   <QuizCta tratamento="Implantes Dentários" />
+interface Props {
+  title?: string;
+  text?: string;
+  tratamento?: string;
+  objetivo?: string;
+  cta?: string;
+}
+const {
+  title = "Pronto para dar o primeiro passo?",
+  text = "Monte o seu pedido em 30 segundos e fale com a nossa equipe no WhatsApp — sem compromisso.",
+  tratamento = "",
+  objetivo = "",
+  cta = "Agendar minha avaliação",
+} = Astro.props;
+---
+
+<section class="sec qc-sec">
+  <div class="wrap">
+    <div class="qc-band reveal">
+      <div class="qc-text">
+        <h3>{title}</h3>
+        <p>{text}</p>
+      </div>
+      <button type="button" class="qc-btn" data-trat={tratamento} data-obj={objetivo}>
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M12 2a10 10 0 0 0-8.6 15l-1.3 4.7 4.8-1.3A10 10 0 1 0 12 2Zm5.3 14.2c-.2.6-1.3 1.2-1.8 1.2-.5.1-1 .1-1.6-.1-.4-.1-.9-.3-1.5-.6-2.7-1.2-4.5-3.9-4.6-4.1-.1-.2-1.1-1.4-1.1-2.7 0-1.3.7-1.9 .9-2.2.2-.2.5-.3.7-.3h.5c.2 0 .4 0 .6.5l.8 1.9c.1.2.1.4 0 .5l-.4.6c-.1.2-.3.3-.1.6.2.3.8 1.3 1.7 2 .8.5 1.1.6 1.4.5.2-.1.4-.4.6-.7.2-.3.4-.2.6-.2l1.7.8c.2.1.4.2.4.4.1.2.1.9-.1 1.5Z"/></svg>
+        {cta}
+      </button>
+    </div>
+  </div>
+</section>
+
+<style is:global>
+  .qc-sec{ padding:70px 0; }
+  .qc-band{ display:flex; flex-wrap:wrap; align-items:center; justify-content:space-between; gap:24px; background:linear-gradient(135deg,var(--navy),var(--navy-deep)); border-radius:var(--radius); padding:40px 44px; box-shadow:var(--shadow); }
+  .qc-text{ flex:1; min-width:240px; }
+  .qc-band h3{ font-family:'Poppins',sans-serif; font-weight:600; color:#fff; font-size:clamp(1.5rem,3vw,2rem); margin:0 0 8px; line-height:1.15; }
+  .qc-band p{ color:rgba(255,255,255,.85); margin:0; max-width:520px; font-size:1.02rem; line-height:1.55; }
+  .qc-btn{ flex:none; display:inline-flex; align-items:center; gap:9px; font-family:'Manrope',sans-serif; font-weight:700; font-size:1rem; color:var(--navy); background:#fff; border:0; border-radius:100px; padding:16px 30px; cursor:pointer; transition:.25s; }
+  .qc-btn:hover{ transform:translateY(-3px); box-shadow:0 22px 44px -20px rgba(0,0,0,.5); }
+  @media (max-width:640px){ .qc-band{ padding:30px 24px; } .qc-btn{ width:100%; justify-content:center; } }
+</style>
+
+<script>
+  document.querySelectorAll(".qc-btn").forEach((b) =>
+    b.addEventListener("click", () => {
+      const opts = {};
+      if (b.dataset.trat) opts.tratamento = b.dataset.trat;
+      if (b.dataset.obj) opts.objetivo = b.dataset.obj;
+      if (window.gopQuiz) window.gopQuiz.open(opts);
+      else window.open("https://wa.me/5511985140604", "_blank");
+    })
+  );
+</script>

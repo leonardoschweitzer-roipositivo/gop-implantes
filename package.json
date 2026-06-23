@@ -6,7 +6,8 @@
   "scripts": {
     "dev": "astro dev",
     "build:kb": "node scripts/build-kb.mjs",
-    "prebuild": "node scripts/build-kb.mjs",
+    "build:index": "node scripts/build-index.mjs",
+    "prebuild": "node scripts/build-kb.mjs && node scripts/build-index.mjs",
     "build": "astro build",
     "preview": "astro preview"
   },

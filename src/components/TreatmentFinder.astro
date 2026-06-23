@@ -1,0 +1,217 @@
+---
+// Busca inteligente "encontre seu tratamento". O visitante descreve o caso em
+// linguagem natural e recebe a recomendação + conteúdos relevantes (link + CTA).
+// Usa a função serverless /api/buscar (Gemini); se ela falhar, cai numa busca
+// por palavra-chave sobre /search-index.json. Os cards são criados via JS, então
+// o CSS precisa ser <style is:global> (gotcha conhecido do projeto).
+// Requer o LeadQuiz na página (global pelo BaseLayout — window.gopQuiz).
+---
+
+<section class="sec bg-sand" id="encontre">
+  <div class="wrap">
+    <div class="tf-head reveal">
+      <span class="eyebrow">Não sabe por onde começar?</span>
+      <h2>Encontre o tratamento ideal para você</h2>
+      <p>Descreva, com as suas palavras, o que você sente ou deseja melhorar — a gente indica o caminho e o próximo passo.</p>
+    </div>
+
+    <form class="tf-form reveal d1" id="tfForm" role="search">
+      <span class="tf-ic" aria-hidden="true">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="7"/><path d="m21 21-4.3-4.3"/></svg>
+      </span>
+      <input id="tfInput" class="tf-input" type="text" autocomplete="off"
+        placeholder="Ex.: perdi um dente · meus dentes estão amarelados · sinto dor ao mastigar"
+        aria-label="Descreva o seu caso" maxlength="200" />
+      <button class="tf-submit" type="submit">Buscar</button>
+    </form>
+
+    <div class="tf-examples reveal d1">
+      <span>Exemplos:</span>
+      <button type="button" class="tf-ex" data-q="Perdi um dente e quero repor">Perdi um dente</button>
+      <button type="button" class="tf-ex" data-q="Meus dentes estão amarelados">Dentes amarelados</button>
+      <button type="button" class="tf-ex" data-q="Sinto dor de dente">Dor de dente</button>
+      <button type="button" class="tf-ex" data-q="Quero alinhar os meus dentes">Alinhar os dentes</button>
+    </div>
+
+    <div class="tf-results" id="tfResults" aria-live="polite"></div>
+  </div>
+</section>
+
+<style is:global>
+  /* respiro entre eyebrow / título / subtítulo acima do campo */
+  .tf-head{ max-width:640px; margin-bottom:30px; }
+  .tf-head .eyebrow{ margin-bottom:18px; }
+  .tf-head h2{ font-family:'Poppins',sans-serif; font-weight:600; color:var(--navy-deep); font-size:clamp(1.9rem,3.4vw,2.6rem); line-height:1.16; margin:0 0 14px; }
+  .tf-head p{ color:var(--muted); font-size:1.06rem; line-height:1.65; margin:0; }
+
+  .tf-form{ display:flex; align-items:center; gap:8px; max-width:720px; background:#fff; border:1.5px solid var(--line); border-radius:100px; padding:7px 7px 7px 18px; box-shadow:var(--shadow); transition:border-color .2s; }
+  .tf-form:focus-within{ border-color:var(--teal); }
+  .tf-ic{ color:var(--teal); display:grid; place-items:center; flex:none; }
+  .tf-input{ flex:1; min-width:0; border:0; outline:0; background:none; font-family:'Manrope',sans-serif; font-size:16px; color:var(--ink); padding:10px 4px; }
+  .tf-input::placeholder{ color:var(--muted); }
+  .tf-submit{ flex:none; font-family:'Manrope',sans-serif; font-weight:700; font-size:.95rem; color:#fff; background:linear-gradient(135deg,var(--navy),var(--teal)); border:0; border-radius:100px; padding:13px 26px; cursor:pointer; transition:.2s; }
+  .tf-submit:hover{ transform:translateY(-2px); box-shadow:0 18px 34px -18px rgba(42,147,184,.6); }
+  .tf-submit:disabled{ opacity:.6; cursor:default; transform:none; box-shadow:none; }
+  .tf-examples{ display:flex; flex-wrap:wrap; align-items:center; gap:8px; margin-top:16px; }
+  .tf-examples > span{ font-size:.85rem; color:var(--muted); }
+  .tf-ex{ font-family:'Manrope',sans-serif; font-size:.84rem; font-weight:600; color:var(--navy); background:#fff; border:1px solid var(--line); border-radius:100px; padding:7px 14px; cursor:pointer; transition:.18s; }
+  .tf-ex:hover{ border-color:var(--teal); transform:translateY(-1px); }
+
+  .tf-results{ margin-top:30px; }
+  .tf-status{ color:var(--muted); font-size:.95rem; display:flex; align-items:center; gap:10px; }
+  .tf-spin{ width:18px; height:18px; border:2.5px solid var(--line); border-top-color:var(--teal); border-radius:50%; animation:tfSpin .8s linear infinite; flex:none; }
+  @keyframes tfSpin{ to{ transform:rotate(360deg); } }
+  .tf-msg{ font-family:'Poppins',sans-serif; color:var(--navy-deep); font-size:1.25rem; margin:0 0 18px; }
+  .tf-grid{ display:grid; grid-template-columns:repeat(auto-fill,minmax(260px,1fr)); gap:18px; }
+  .tf-card{ background:#fff; border:1px solid var(--line); border-radius:18px; padding:22px; display:flex; flex-direction:column; box-shadow:0 18px 40px -30px rgba(16,41,60,.4); }
+  .tf-card.is-rec{ border:1.5px solid var(--teal); box-shadow:0 24px 50px -26px rgba(42,147,184,.5); }
+  .tf-tag{ align-self:flex-start; font-size:.7rem; font-weight:700; letter-spacing:.08em; text-transform:uppercase; padding:4px 10px; border-radius:100px; margin-bottom:10px; }
+  .tf-tag.t-rec{ background:var(--navy); color:#fff; }
+  .tf-tag.t-tratamento{ background:var(--sand); color:var(--navy); }
+  .tf-tag.t-artigo{ background:rgba(42,147,184,.14); color:#1d6b86; }
+  .tf-card h4{ font-family:'Poppins',sans-serif; font-weight:600; color:var(--navy-deep); font-size:1.2rem; line-height:1.2; margin:0 0 8px; }
+  .tf-card p{ color:var(--muted); font-size:.92rem; line-height:1.55; margin:0 0 16px; flex:1; }
+  .tf-card-actions{ display:flex; flex-wrap:wrap; align-items:center; gap:8px 14px; }
+  .tf-link{ font-weight:700; font-size:.9rem; color:var(--navy); text-decoration:none; }
+  .tf-link:hover{ color:var(--teal); }
+  .tf-cta{ font-family:'Manrope',sans-serif; font-weight:700; font-size:.85rem; color:#fff; background:#25d366; border:0; border-radius:100px; padding:9px 16px; cursor:pointer; transition:.2s; display:inline-flex; align-items:center; gap:6px; }
+  .tf-cta:hover{ background:#1ebe5d; transform:translateY(-1px); }
+  .tf-next{ margin-top:24px; display:flex; flex-wrap:wrap; align-items:center; gap:14px; background:#fff; border:1px dashed var(--teal); border-radius:18px; padding:18px 22px; }
+  .tf-next p{ margin:0; flex:1; min-width:200px; color:var(--ink); font-weight:600; }
+  .tf-next .lq-trigger{ font-family:'Manrope',sans-serif; font-weight:700; font-size:.92rem; color:#fff; background:linear-gradient(135deg,var(--navy),var(--teal)); border:0; border-radius:100px; padding:12px 24px; cursor:pointer; transition:.2s; text-decoration:none; display:inline-block; }
+  .tf-next .lq-trigger:hover{ transform:translateY(-2px); box-shadow:0 16px 30px -16px rgba(42,147,184,.6); }
+  .tf-err{ font-size:.82rem; color:var(--muted); margin-top:14px; }
+  @media (max-width:560px){
+    .tf-form{ flex-wrap:wrap; border-radius:20px; padding:12px; }
+    .tf-input{ width:100%; }
+    .tf-submit{ width:100%; }
+  }
+</style>
+
+<script>
+  (() => {
+    const form = document.getElementById("tfForm");
+    if (!form) return;
+    const input = document.getElementById("tfInput");
+    const results = document.getElementById("tfResults");
+    const submit = form.querySelector(".tf-submit");
+
+    const STOP = new Set("a o e de da do das dos um uma uns umas que com por para pra no na nos nas em meu meus minha minhas estou esta está estão tenho ter ao aos os as sinto quero queria gostaria muito mais meu se sou dos dia".split(" "));
+    const norm = (s) => (s || "").toLowerCase().normalize("NFD").replace(/[̀-ͯ]/g, "");
+    const tokenize = (s) => norm(s).replace(/[^a-z0-9\s]/g, " ").split(/\s+/).filter((w) => w.length > 2 && !STOP.has(w));
+    const esc = (s) => (s || "").replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;");
+
+    let indexCache = null;
+    async function getIndex() {
+      if (indexCache) return indexCache;
+      const r = await fetch("/search-index.json", { cache: "force-cache" });
+      indexCache = await r.json();
+      return indexCache;
+    }
+
+    async function keywordSearch(query) {
+      const items = await getIndex();
+      const qt = tokenize(query);
+      const ql = norm(query);
+      const scored = items
+        .map((it) => {
+          const hay = new Set(tokenize(it.titulo + " " + it.resumo + " " + (it.keywords || []).join(" ")));
+          let s = 0;
+          for (const t of qt) if (hay.has(t)) s += 1;
+          for (const kw of it.keywords || []) if (ql.includes(norm(kw))) s += 2;
+          return { it, s };
+        })
+        .filter((x) => x.s > 0)
+        .sort((a, b) => b.s - a.s);
+      const cards = scored.map(({ it }) => ({ ...it, motivo: it.resumo }));
+      const rec = cards.find((c) => c.tipo === "tratamento") || cards[0] || null;
+      const itens = rec ? cards.filter((c) => c.id !== rec.id).slice(0, 3) : cards.slice(0, 3);
+      return { recomendado: rec, itens, mensagem: rec ? "Veja o que encontramos para o seu caso:" : "" };
+    }
+
+    function cardHtml(item, isRec) {
+      const tipoTag = isRec
+        ? '<span class="tf-tag t-rec">Recomendado para você</span>'
+        : `<span class="tf-tag t-${item.tipo}">${item.tipo === "artigo" ? "Artigo" : "Tratamento"}</span>`;
+      return (
+        `<article class="tf-card${isRec ? " is-rec" : ""}">` +
+        tipoTag +
+        `<h4>${esc(item.titulo)}</h4>` +
+        `<p>${esc(item.motivo || item.resumo)}</p>` +
+        `<div class="tf-card-actions">` +
+        `<a class="tf-link" href="${esc(item.url)}">Saiba mais →</a>` +
+        `<button type="button" class="tf-cta" data-trat="${esc(item.titulo)}">Agendar avaliação</button>` +
+        `</div></article>`
+      );
+    }
+
+    function render(data, fonte) {
+      const rec = data.recomendado;
+      const itens = data.itens || [];
+      if (!rec && itens.length === 0) {
+        results.innerHTML =
+          `<p class="tf-msg">Não encontrei um tratamento específico para isso 🤔</p>` +
+          `<div class="tf-next"><p>Sem problema — a nossa equipe te ajuda a entender o melhor caminho.</p>` +
+          `<button type="button" class="lq-trigger" data-trat="">Falar com a clínica</button></div>`;
+      } else {
+        let html = "";
+        if (data.mensagem) html += `<p class="tf-msg">${esc(data.mensagem)}</p>`;
+        html += '<div class="tf-grid">';
+        if (rec) html += cardHtml(rec, true);
+        for (const it of itens) html += cardHtml(it, false);
+        html += "</div>";
+        const trat = rec ? rec.titulo : "";
+        html +=
+          `<div class="tf-next"><p>Encontrou o que precisava? O próximo passo é agendar a sua avaliação.</p>` +
+          `<button type="button" class="lq-trigger" data-trat="${esc(trat)}">Agendar minha avaliação</button></div>`;
+        if (fonte === "local") html += `<p class="tf-err">Resultado por busca rápida (assistente indisponível no momento).</p>`;
+        results.innerHTML = html;
+      }
+      results.querySelectorAll(".tf-cta, .lq-trigger").forEach((b) => {
+        b.addEventListener("click", () => {
+          const trat = b.dataset.trat || "";
+          if (window.gopQuiz) window.gopQuiz.open(trat ? { tratamento: trat } : {});
+          else window.open("https://wa.me/5511985140604", "_blank");
+        });
+      });
+      results.scrollIntoView({ behavior: "smooth", block: "nearest" });
+    }
+
+    async function run(query) {
+      query = (query || "").trim();
+      if (query.length < 2) { input.focus(); return; }
+      submit.disabled = true;
+      results.innerHTML = '<p class="tf-status"><span class="tf-spin"></span> Analisando o seu caso…</p>';
+      try {
+        const ctrl = new AbortController();
+        const t = setTimeout(() => ctrl.abort(), 12000);
+        const r = await fetch("/api/buscar", {
+          method: "POST",
+          headers: { "content-type": "application/json" },
+          body: JSON.stringify({ query }),
+          signal: ctrl.signal,
+        });
+        clearTimeout(t);
+        if (!r.ok) throw new Error("status " + r.status);
+        const data = await r.json();
+        if (!data.ok) throw new Error(data.error || "sem ok");
+        render(data, "ia");
+      } catch (e) {
+        try {
+          render(await keywordSearch(query), "local");
+        } catch (e2) {
+          results.innerHTML =
+            `<div class="tf-next"><p>Tivemos um problema técnico. Fale direto com a nossa equipe.</p>` +
+            `<a class="lq-trigger" href="https://wa.me/5511985140604" target="_blank" rel="noopener" data-direct-wpp>Falar no WhatsApp</a></div>`;
+        }
+      } finally {
+        submit.disabled = false;
+      }
+    }
+
+    form.addEventListener("submit", (e) => { e.preventDefault(); run(input.value); });
+    document.querySelectorAll(".tf-ex").forEach((b) =>
+      b.addEventListener("click", () => { input.value = b.dataset.q; run(b.dataset.q); })
+    );
+  })();
+</script>

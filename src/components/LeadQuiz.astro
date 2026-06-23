@@ -1,0 +1,215 @@
+---
+// Quiz de lead "lite" → WhatsApp. 100% client, sem backend e sem armazenar nada
+// (apenas localStorage para lembrar o nome na sessão). Monta uma mensagem rica e
+// abre o WhatsApp da clínica já com o contexto. Inclua UMA vez por página
+// (já vem global pelo BaseLayout). Abra de qualquer lugar com window.gopQuiz.open().
+---
+
+<div class="lq-overlay" id="lqOverlay" hidden aria-hidden="true">
+  <div class="lq-card" role="dialog" aria-modal="true" aria-labelledby="lqTitle">
+    <button class="lq-close" id="lqClose" aria-label="Fechar">
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M18 6 6 18M6 6l12 12"/></svg>
+    </button>
+
+    <div class="lq-head">
+      <span class="lq-eyebrow">Agende em 30 segundos</span>
+      <h3 id="lqTitle">Vamos cuidar do seu sorriso</h3>
+      <p class="lq-interesse" id="lqInteresse" hidden></p>
+    </div>
+
+    <div class="lq-step" data-step="1">
+      <p class="lq-q">Qual é o seu objetivo?</p>
+      <div class="lq-chips" id="lqGoals">
+        <button type="button" class="lq-chip" data-val="Recuperar um dente perdido">Recuperar um dente perdido</button>
+        <button type="button" class="lq-chip" data-val="Alinhar os dentes">Alinhar os dentes</button>
+        <button type="button" class="lq-chip" data-val="Estética e clareamento do sorriso">Estética / clarear o sorriso</button>
+        <button type="button" class="lq-chip" data-val="Dor ou urgência">Dor ou urgência</button>
+        <button type="button" class="lq-chip" data-val="Check-up e limpeza">Check-up e limpeza</button>
+        <button type="button" class="lq-chip" data-val="Outro assunto">Outro</button>
+      </div>
+    </div>
+
+    <div class="lq-step" data-step="2" hidden>
+      <p class="lq-q">Melhor horário para falarmos?</p>
+      <div class="lq-chips" id="lqTimes">
+        <button type="button" class="lq-chip" data-val="De manhã">De manhã</button>
+        <button type="button" class="lq-chip" data-val="À tarde">À tarde</button>
+        <button type="button" class="lq-chip" data-val="À noite">À noite</button>
+        <button type="button" class="lq-chip" data-val="Qualquer horário">Qualquer horário</button>
+      </div>
+    </div>
+
+    <div class="lq-step" data-step="3" hidden>
+      <p class="lq-q">Como podemos te chamar?</p>
+      <input type="text" id="lqName" class="lq-input" placeholder="Seu nome (pode ser só o primeiro)" autocomplete="given-name" />
+      <p class="lq-note">É rapidinho e sem compromisso — você fala direto com a nossa equipe no WhatsApp.</p>
+    </div>
+
+    <div class="lq-foot">
+      <div class="lq-dots" id="lqDots"><span class="on"></span><span></span><span></span></div>
+      <div class="lq-actions">
+        <button type="button" class="lq-back" id="lqBack" hidden>Voltar</button>
+        <button type="button" class="lq-next" id="lqNext" hidden>Continuar</button>
+        <a class="lq-go" id="lqGo" href="#" target="_blank" rel="noopener" data-direct-wpp hidden>
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M12 2a10 10 0 0 0-8.6 15l-1.3 4.7 4.8-1.3A10 10 0 1 0 12 2Zm5.3 14.2c-.2.6-1.3 1.2-1.8 1.2-.5.1-1 .1-1.6-.1-.4-.1-.9-.3-1.5-.6-2.7-1.2-4.5-3.9-4.6-4.1-.1-.2-1.1-1.4-1.1-2.7 0-1.3.7-1.9 .9-2.2.2-.2.5-.3.7-.3h.5c.2 0 .4 0 .6.5l.8 1.9c.1.2.1.4 0 .5l-.4.6c-.1.2-.3.3-.1.6.2.3.8 1.3 1.7 2 .8.5 1.1.6 1.4.5.2-.1.4-.4.6-.7.2-.3.4-.2.6-.2l1.7.8c.2.1.4.2.4.4.1.2.1.9-.1 1.5Z"/></svg>
+          Abrir no WhatsApp
+        </a>
+      </div>
+    </div>
+  </div>
+</div>
+
+<style is:global>
+  /* com o modal aberto: trava o scroll e PAUSA as animações de fundo, senão o
+     backdrop-filter reborra o fundo animado (marquee/aurora) a cada frame e
+     trava no desktop (viewport grande). */
+  body.lq-open{ overflow:hidden; }
+  body.lq-open .aurora span,
+  body.lq-open .marquee-track,
+  body.lq-open .fk-fab{ animation-play-state:paused !important; }
+  .lq-overlay{ position:fixed; inset:0; z-index:200; display:none; align-items:center; justify-content:center; padding:20px; background:rgba(11,24,40,.55); backdrop-filter:blur(4px); -webkit-backdrop-filter:blur(4px); }
+  .lq-overlay.open{ display:flex; animation:lqFade .2s ease; }
+  @keyframes lqFade{ from{opacity:0} to{opacity:1} }
+  .lq-card{ position:relative; width:100%; max-width:440px; background:var(--cream); border-radius:24px; box-shadow:0 40px 90px -30px rgba(11,24,40,.6); padding:30px 26px 22px; max-height:calc(100vh - 40px); overflow:auto; animation:lqUp .26s cubic-bezier(.2,.8,.2,1); }
+  @keyframes lqUp{ from{transform:translateY(14px); opacity:0} to{transform:none; opacity:1} }
+  .lq-close{ position:absolute; top:14px; right:14px; width:36px; height:36px; display:grid; place-items:center; border:0; border-radius:50%; background:var(--sand); color:var(--navy); cursor:pointer; transition:.2s; }
+  .lq-close:hover{ background:var(--navy); color:#fff; }
+  .lq-head{ margin-bottom:18px; padding-right:24px; }
+  .lq-eyebrow{ font-family:'Manrope',sans-serif; font-weight:700; font-size:.74rem; letter-spacing:.14em; text-transform:uppercase; color:var(--teal); }
+  .lq-head h3{ font-family:'Poppins',sans-serif; font-weight:600; color:var(--navy-deep); font-size:1.5rem; margin:6px 0 0; line-height:1.15; }
+  .lq-interesse{ margin:10px 0 0; font-size:.86rem; color:var(--navy); background:var(--sand); border-radius:10px; padding:7px 12px; display:inline-block; }
+  .lq-q{ font-weight:700; color:var(--ink); margin:0 0 12px; font-size:1rem; }
+  .lq-chips{ display:flex; flex-wrap:wrap; gap:9px; }
+  .lq-chip{ font-family:'Manrope',sans-serif; font-size:.9rem; font-weight:600; color:var(--ink); background:#fff; border:1.5px solid var(--line); border-radius:100px; padding:10px 16px; cursor:pointer; transition:.18s; }
+  .lq-chip:hover{ border-color:var(--teal); }
+  .lq-chip.sel{ background:var(--navy); border-color:var(--navy); color:#fff; }
+  .lq-input{ width:100%; font-family:'Manrope',sans-serif; font-size:16px; padding:14px 16px; border:1.5px solid var(--line); border-radius:14px; background:#fff; color:var(--ink); outline:none; transition:.18s; }
+  .lq-input:focus{ border-color:var(--teal); }
+  .lq-note{ font-size:.82rem; color:var(--muted); margin:12px 0 0; line-height:1.5; }
+  .lq-foot{ display:flex; align-items:center; justify-content:space-between; gap:14px; margin-top:24px; }
+  .lq-dots{ display:flex; gap:6px; }
+  .lq-dots span{ width:7px; height:7px; border-radius:50%; background:var(--line); transition:.2s; }
+  .lq-dots span.on{ background:var(--teal); transform:scale(1.2); }
+  .lq-actions{ display:flex; align-items:center; gap:8px; }
+  .lq-back{ font-family:'Manrope',sans-serif; font-weight:600; font-size:.9rem; color:var(--muted); background:none; border:0; cursor:pointer; padding:11px 8px; }
+  .lq-back:hover{ color:var(--ink); }
+  .lq-next{ font-family:'Manrope',sans-serif; font-weight:700; font-size:.92rem; color:#fff; background:linear-gradient(135deg,var(--navy),var(--teal)); border:0; border-radius:100px; padding:12px 24px; cursor:pointer; transition:.2s; }
+  .lq-next:hover{ transform:translateY(-2px); box-shadow:0 16px 30px -16px rgba(42,147,184,.6); }
+  .lq-go{ display:inline-flex; align-items:center; gap:8px; font-family:'Manrope',sans-serif; font-weight:700; font-size:.92rem; color:#fff; background:#25d366; border-radius:100px; padding:12px 22px; text-decoration:none; transition:.2s; }
+  .lq-go:hover{ background:#1ebe5d; transform:translateY(-2px); }
+  @media (max-width:480px){ .lq-card{ padding:26px 18px 18px; border-radius:20px; } .lq-head h3{ font-size:1.32rem; } }
+</style>
+
+<script>
+  (() => {
+    const overlay = document.getElementById("lqOverlay");
+    if (!overlay || window.gopQuiz) return; // só inicializa uma vez
+
+    const steps = [...overlay.querySelectorAll(".lq-step")];
+    const dots = [...document.getElementById("lqDots").children];
+    const goalsWrap = document.getElementById("lqGoals");
+    const timesWrap = document.getElementById("lqTimes");
+    const nameInput = document.getElementById("lqName");
+    const interesse = document.getElementById("lqInteresse");
+    const btnBack = document.getElementById("lqBack");
+    const btnNext = document.getElementById("lqNext");
+    const btnGo = document.getElementById("lqGo");
+    const WPP = "5511985140604";
+
+    const state = { step: 1, objetivo: "", horario: "", nome: "", tratamento: "" };
+
+    function selectChip(wrap, val) {
+      [...wrap.children].forEach((c) => c.classList.toggle("sel", c.dataset.val === val));
+    }
+
+    function render() {
+      steps.forEach((s) => (s.hidden = Number(s.dataset.step) !== state.step));
+      dots.forEach((d, i) => d.classList.toggle("on", i < state.step));
+      btnBack.hidden = state.step === 1;
+      const last = state.step === 3;
+      btnNext.hidden = true; // passos 1 e 2 avançam sozinhos ao escolher a opção
+      btnGo.hidden = !last;
+      if (last) setTimeout(() => nameInput.focus(), 60);
+    }
+
+    function buildLink() {
+      const nome = (nameInput.value || "").trim();
+      state.nome = nome;
+      let msg = `Olá! ${nome ? "Sou " + nome + ". " : ""}Vim pelo site da GOP Implantes 🦷`;
+      if (state.tratamento) msg += `\nTenho interesse em: ${state.tratamento}`;
+      if (state.objetivo) msg += `\nMeu objetivo: ${state.objetivo}`;
+      if (state.horario) msg += `\nMelhor horário para contato: ${state.horario}`;
+      msg += `\nGostaria de agendar uma avaliação. 🙂`;
+      try { if (nome) localStorage.setItem("gop_lead_nome", nome); } catch (e) {}
+      return `https://wa.me/${WPP}?text=${encodeURIComponent(msg)}`;
+    }
+
+    // avança sozinho ao escolher (sem botão "Continuar" desabilitado travando o fluxo)
+    let advancing = false;
+    function autoAdvance() {
+      render();
+      if (state.step < 3 && !advancing) {
+        advancing = true;
+        setTimeout(() => { state.step++; advancing = false; render(); }, 240);
+      }
+    }
+    goalsWrap.addEventListener("click", (e) => {
+      const b = e.target.closest(".lq-chip"); if (!b) return;
+      state.objetivo = b.dataset.val; selectChip(goalsWrap, state.objetivo); autoAdvance();
+    });
+    timesWrap.addEventListener("click", (e) => {
+      const b = e.target.closest(".lq-chip"); if (!b) return;
+      state.horario = b.dataset.val; selectChip(timesWrap, state.horario); autoAdvance();
+    });
+    btnNext.addEventListener("click", () => { if (state.step < 3) { state.step++; render(); } });
+    btnBack.addEventListener("click", () => { if (state.step > 1) { state.step--; render(); } });
+    btnGo.addEventListener("click", () => { btnGo.href = buildLink(); close(); });
+
+    function open(opts = {}) {
+      state.step = 1;
+      state.objetivo = opts.objetivo || "";
+      state.horario = "";
+      state.tratamento = opts.tratamento || "";
+      if (state.objetivo) selectChip(goalsWrap, state.objetivo); else selectChip(goalsWrap, "");
+      selectChip(timesWrap, "");
+      try { nameInput.value = localStorage.getItem("gop_lead_nome") || ""; } catch (e) { nameInput.value = ""; }
+      interesse.hidden = !state.tratamento;
+      if (state.tratamento) interesse.textContent = "Interesse: " + state.tratamento;
+      overlay.hidden = false; overlay.setAttribute("aria-hidden", "false");
+      // pausa animações de fundo e trava o scroll; compensa a barra p/ não "pular"
+      const sbw = window.innerWidth - document.documentElement.clientWidth;
+      if (sbw > 0) document.body.style.paddingRight = sbw + "px";
+      document.body.classList.add("lq-open");
+      requestAnimationFrame(() => overlay.classList.add("open"));
+      render();
+    }
+    function close() {
+      overlay.classList.remove("open");
+      overlay.setAttribute("aria-hidden", "true");
+      document.body.classList.remove("lq-open");
+      document.body.style.paddingRight = "";
+      setTimeout(() => (overlay.hidden = true), 180);
+    }
+
+    document.getElementById("lqClose").addEventListener("click", close);
+    overlay.addEventListener("click", (e) => { if (e.target === overlay) close(); });
+    document.addEventListener("keydown", (e) => { if (e.key === "Escape" && overlay.classList.contains("open")) close(); });
+
+    window.gopQuiz = { open, close };
+
+    // Intercepta QUALQUER botão/link de WhatsApp do site e abre o quiz antes
+    // (qualifica o lead -> depois vai pro WhatsApp). Exceções: o botão do próprio
+    // quiz (#lqOverlay / data-direct-wpp) e os links do chat assistente (#fkChat).
+    // Em páginas de tratamento, pré-preenche o tratamento (lê o .art-title).
+    document.addEventListener("click", (e) => {
+      const a = e.target.closest('a[href*="wa.me/"]');
+      if (!a) return;
+      if (a.closest("#lqOverlay") || a.closest("#fkChat") || a.hasAttribute("data-direct-wpp")) return;
+      e.preventDefault();
+      const trat = a.closest(".art-cta")
+        ? (document.querySelector(".art-title")?.textContent || "").trim()
+        : "";
+      open(trat ? { tratamento: trat } : {});
+    });
+  })();
+</script>

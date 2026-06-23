@@ -55,10 +55,54 @@ function chatDevPlugin() {
   };
 }
 
+// Plugin SÓ DE DESENVOLVIMENTO para a busca inteligente: gera o índice estático
+// no startup e faz o `astro dev` servir POST /api/buscar, com o mesmo núcleo da
+// função serverless de produção (api/_search-core.mjs). Não altera o build.
+function searchDevPlugin() {
+  return {
+    name: "gop-search-dev",
+    apply: "serve",
+    async configureServer(server) {
+      loadLocalEnv();
+      const { buildIndex } = await import("./scripts/build-index.mjs");
+      const idx = buildIndex(); // gera api/_index.generated.js + public/search-index.json
+      console.log(`[buscar] índice pronto: ${idx.items} itens`);
+      const core = await import("./api/_search-core.mjs");
+
+      server.middlewares.use(async (req, res, next) => {
+        if (!req.url || !req.url.startsWith("/api/buscar")) return next();
+        if (req.method !== "POST") {
+          res.statusCode = 405;
+          return res.end("Method Not Allowed");
+        }
+        if (!core.rateLimit(req.socket.remoteAddress || "local")) {
+          res.statusCode = 429;
+          return res.end(JSON.stringify({ ok: false, error: "rate" }));
+        }
+        const body = await core.readJson(req);
+        const v = core.validateQuery(body);
+        if (!v.ok) {
+          res.statusCode = 400;
+          return res.end(JSON.stringify({ ok: false, error: v.error }));
+        }
+        try {
+          const result = await core.search(v.query);
+          res.setHeader("Content-Type", "application/json; charset=utf-8");
+          return res.end(JSON.stringify({ ok: true, ...result }));
+        } catch (e) {
+          console.error("[buscar]", e?.message || e);
+          res.statusCode = 502;
+          return res.end(JSON.stringify({ ok: false, error: "ia_indisponivel" }));
+        }
+      });
+    },
+  };
+}
+
 // https://astro.build
 export default defineConfig({
   site: "https://gopimplantes.br",
   // emite "pagina.html" em vez de "pagina/index.html" — URLs com extensão .html
   build: { format: "file" },
-  vite: { plugins: [chatDevPlugin()] },
+  vite: { plugins: [chatDevPlugin(), searchDevPlugin()] },
 });
