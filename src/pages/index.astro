@@ -166,6 +166,16 @@ import TreatmentFinder from "../components/TreatmentFinder.astro";
   </div>
 </div>
 
+<!-- BUSCA INTELIGENTE (encontre seu tratamento); o quiz (LeadQuiz) é global, vem do BaseLayout -->
+<TreatmentFinder />
+
+<!-- divisória suave entre a busca e a seção de São Bernardo do Campo -->
+<style is:global>
+  #encontre{ padding-bottom:60px; }
+  #sbc{ padding-top:0; }
+  #sbc > .wrap{ border-top:1px solid var(--line); padding-top:60px; }
+</style>
+
 <!-- CONEXÃO LOCAL · SÃO BERNARDO DO CAMPO -->
 <section class="sec bg-sand local" id="sbc">
   <div class="wrap">
@@ -191,9 +201,6 @@ import TreatmentFinder from "../components/TreatmentFinder.astro";
     </div>
   </div>
 </section>
-
-<!-- BUSCA INTELIGENTE (encontre seu tratamento); o quiz (LeadQuiz) é global, vem do BaseLayout -->
-<TreatmentFinder />
 
 <!-- TRATAMENTOS / SERVIÇOS -->
 <section class="sec" id="tratamentos">
