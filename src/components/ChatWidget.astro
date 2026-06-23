@@ -126,7 +126,7 @@
   .fk-wpp:hover{ color:var(--fk-wpp-dark); }
 
   @media (max-width:560px){
-    .fk-panel{ left:8px; right:8px; width:auto; bottom:88px; height:calc(100vh - 120px); }
+    .fk-panel{ left:8px; right:8px; width:auto; bottom:88px; height:min(64vh,540px); max-height:calc(100vh - 110px); }
     .fk-fab{ right:16px; bottom:16px; }
   }
   @media (prefers-reduced-motion:reduce){ .fk-panel{ animation:none; } .fk-fab{ transition:none; animation:none; } }
