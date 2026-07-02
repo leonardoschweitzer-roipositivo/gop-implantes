@@ -1,6 +1,7 @@
 ---
 import BaseLayout from "../layouts/BaseLayout.astro";
 import TreatmentFinder from "../components/TreatmentFinder.astro";
+import SmileSimulator from "../components/SmileSimulator.astro";
 ---
 <BaseLayout
   title="GOP Implantes — Implantes dentários e odontologia completa em SBC"
@@ -198,6 +199,21 @@ import TreatmentFinder from "../components/TreatmentFinder.astro";
           Venha sorrir com a GOP
         </a>
       </div>
+    </div>
+  </div>
+</section>
+
+<!-- SIMULADOR DE SORRISO COM IA -->
+<section class="sec bg-sand" id="simulador">
+  <div class="wrap">
+    <div class="sec-head reveal" style="margin-left:auto;margin-right:auto;text-align:center">
+      <span class="eyebrow" style="justify-content:center;width:100%">Novo · Inteligência Artificial</span>
+      <h2>Veja seu sorriso com o implante — em segundos</h2>
+      <p>Envie uma foto sorrindo e a IA mostra como você ficaria com o dente reposto, mantendo as suas feições. Grátis e sem compromisso.</p>
+    </div>
+    <SmileSimulator variant="home" />
+    <div class="reveal" style="text-align:center;margin-top:26px">
+      <a href="/simulador-de-sorriso.html" class="btn btn-ghost">Saber mais sobre o simulador</a>
     </div>
   </div>
 </section>

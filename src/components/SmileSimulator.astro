@@ -1,0 +1,434 @@
+---
+// Simulador de Sorriso com IA. O visitante envia uma foto sorrindo (mostrando a
+// falta de um dente); a IA (Gemini 2.5 Flash Image) devolve a mesma foto "com o
+// implante", preservando as feições. O resultado aparece BORRADO (curiosidade) e
+// só é revelado em troca de nome + WhatsApp (POST /api/simular-sorriso); o lead
+// (nome+WhatsApp+foto antes/depois) é enviado à clínica por e-mail.
+// Fonte única: usado na HOME (variant="home") e na página dedicada (variant="page").
+// Zero deps, vanilla JS. Estilos em <style is:global>.
+interface Props { variant?: "home" | "page"; }
+const { variant = "home" } = Astro.props;
+---
+
+<div class={`ss ss-${variant}`} data-stage="intro">
+  <!-- honeypot anti-bot (não preencher) -->
+  <input type="text" class="ss-hp" name="website" tabindex="-1" autocomplete="off" aria-hidden="true" />
+
+  <!-- ETAPA 1 · INTRO / UPLOAD -->
+  <div class="ss-panel" data-panel="intro">
+    <div class="ss-step-head">
+      <span class="ss-step-num">Passo 1</span>
+      <p>Autorize para liberar o envio da sua foto.</p>
+    </div>
+
+    <label class="ss-consent">
+      <input type="checkbox" class="ss-consent-check" />
+      <span>
+        Autorizo o uso da minha foto <b>apenas</b> para gerar esta simulação e o envio dela e do meu
+        contato à equipe da GOP Implantes. A imagem não é publicada nem armazenada em banco de dados.
+      </span>
+    </label>
+
+    <div class="ss-step-head ss-step-head--2">
+      <span class="ss-step-num">Passo 2</span>
+      <p>
+        <span class="ss-only-mobile">Clique em “Escolher foto” para procurar sua foto na galeria de imagens do celular.</span>
+        <span class="ss-only-desktop">Clique em “Escolher foto” para procurar a imagem no seu computador.</span>
+      </p>
+    </div>
+
+    <div class="ss-grid">
+      <div class="ss-dropzone" data-drop>
+        <input type="file" accept="image/*" class="ss-file" hidden />
+        <div class="ss-drop-inner">
+          <svg viewBox="0 0 24 24" width="40" height="40" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M14 3v4a1 1 0 0 0 1 1h4"/><path d="M17 21H7a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h7l5 5v11a2 2 0 0 1-2 2Z"/><circle cx="12" cy="13" r="2.5"/><path d="m9 21 3-3 3 3"/></svg>
+          <p class="ss-drop-title">Envie uma foto sorrindo</p>
+          <p class="ss-drop-hint">Mostrando o espaço do dente que falta</p>
+          <button type="button" class="btn btn-primary ss-pick" disabled>Escolher foto</button>
+        </div>
+      </div>
+
+      <div class="ss-tips">
+        <p class="ss-tips-title">Para o melhor resultado:</p>
+        <ul>
+          <li>Rosto de frente, boa iluminação</li>
+          <li>Sorriso aberto, com os dentes à mostra</li>
+          <li>Dá para ver o espaço do dente ausente</li>
+          <li>Sem óculos escuros ou mão na frente da boca</li>
+        </ul>
+      </div>
+    </div>
+  </div>
+
+  <!-- ETAPA 2 · CARREGANDO -->
+  <div class="ss-panel" data-panel="loading" hidden>
+    <div class="ss-loading">
+      <div class="ss-spinner" aria-hidden="true"></div>
+      <p class="ss-loading-title">A IA está desenhando seu novo sorriso…</p>
+      <p class="ss-loading-sub">Isso leva alguns segundos. Preservando cada detalhe do seu rosto.</p>
+    </div>
+  </div>
+
+  <!-- ETAPA 3 · TEASER (resultado BORRADO + formulário de desbloqueio) -->
+  <div class="ss-panel" data-panel="teaser" hidden>
+    <div class="ss-reveal">
+      <div class="ss-imgwrap is-blurred" data-imgwrap>
+        <img class="ss-result" alt="Prévia da simulação do seu sorriso" />
+        <span class="ss-shine" aria-hidden="true"></span>
+      </div>
+
+      <div class="ss-gate" data-gate>
+        <div class="ss-gate-head">
+          <span class="ss-lock" aria-hidden="true">
+            <svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="4" y="10" width="16" height="10" rx="2"/><path d="M8 10V7a4 4 0 0 1 8 0v3"/></svg>
+          </span>
+          <h3>Seu novo sorriso está pronto ✨</h3>
+          <p>Deixe seu nome e WhatsApp para desbloquear a imagem nítida.</p>
+        </div>
+
+        <form class="ss-form" novalidate>
+          <div class="ss-field"><input type="text" name="nome" placeholder="Seu nome" autocomplete="name" required /></div>
+          <div class="ss-field"><input type="tel" name="whatsapp" placeholder="WhatsApp (com DDD)" autocomplete="tel" inputmode="tel" required /></div>
+          <p class="ss-error" data-error hidden></p>
+          <button type="submit" class="btn btn-primary ss-reveal-btn">
+            <span class="ss-btn-label">Revelar meu sorriso</span>
+            <span class="ss-btn-spin" hidden aria-hidden="true"></span>
+          </button>
+          <p class="ss-legal">Simulação ilustrativa gerada por IA. Não representa promessa de resultado; o plano real é definido em avaliação presencial.</p>
+        </form>
+      </div>
+    </div>
+  </div>
+
+  <!-- ETAPA 4 · REVELADO -->
+  <div class="ss-panel" data-panel="done" hidden>
+    <div class="ss-done">
+      <div class="ss-compare" data-compare>
+        <div class="ss-imgwrap"><img class="ss-result-final" alt="Simulação do seu sorriso com implante" /></div>
+        <div class="ss-thumbs">
+          <button type="button" class="ss-thumb is-active" data-show="depois">Depois</button>
+          <button type="button" class="ss-thumb" data-show="antes">Antes</button>
+        </div>
+      </div>
+      <div class="ss-done-cta">
+        <h3>Gostou do resultado? 😍</h3>
+        <p>Esse é só um preview. Agende uma avaliação e descubra o plano ideal para o seu caso, com a nossa equipe.</p>
+        <div class="ss-done-actions">
+          <button type="button" class="btn btn-primary ss-agendar">Agendar minha avaliação</button>
+          <a class="btn btn-ghost" data-direct-wpp href="https://wa.me/5511985140604?text=Fiz%20a%20simula%C3%A7%C3%A3o%20de%20sorriso%20no%20site%20e%20quero%20saber%20mais%20sobre%20implante" target="_blank" rel="noopener">Falar no WhatsApp</a>
+        </div>
+        <p class="ss-legal">Simulação ilustrativa gerada por IA — não é promessa de resultado.</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- ETAPA · ERRO -->
+  <div class="ss-panel" data-panel="error" hidden>
+    <div class="ss-errbox">
+      <svg viewBox="0 0 24 24" width="34" height="34" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"><circle cx="12" cy="12" r="9"/><path d="M12 8v5M12 16h.01"/></svg>
+      <p class="ss-errmsg" data-errmsg></p>
+      <div class="ss-done-actions">
+        <button type="button" class="btn btn-primary ss-retry">Tentar outra foto</button>
+        <a class="btn btn-ghost" data-direct-wpp href="https://wa.me/5511985140604" target="_blank" rel="noopener">Falar no WhatsApp</a>
+      </div>
+    </div>
+  </div>
+</div>
+
+<style is:global>
+  .ss{ max-width:920px; margin:0 auto; background:var(--cream); border:1px solid var(--line); border-radius:var(--radius); box-shadow:var(--shadow); padding:26px; position:relative; overflow:hidden; }
+  .ss-page{ max-width:960px; }
+  .ss-hp{ position:absolute; left:-9999px; width:1px; height:1px; opacity:0; }
+  .ss-panel[hidden]{ display:none; }
+
+  /* ---- intro ---- */
+  .ss-step-head{ text-align:left; margin-bottom:12px; }
+  .ss-step-head--2{ margin-top:2px; }
+  .ss-step-num{ font-family:'Poppins',sans-serif; color:var(--navy-deep); font-size:1.15rem; font-weight:600; }
+  .ss-step-head p{ color:var(--muted); font-size:.92rem; margin:5px 0 0; }
+  .ss-only-desktop{ display:inline; }
+  .ss-only-mobile{ display:none; }
+  .ss-grid{ display:grid; grid-template-columns:1.3fr 1fr; gap:22px; align-items:stretch; }
+  .ss-dropzone{ border:2px dashed rgba(27,58,83,.28); border-radius:18px; background:#fff; display:grid; place-items:center; padding:30px 20px; text-align:center; transition:.25s; cursor:pointer; }
+  .ss-dropzone.is-over{ border-color:var(--teal); background:rgba(42,147,184,.05); }
+  .ss-dropzone.is-ready{ cursor:pointer; }
+  .ss-dropzone:not(.is-ready){ opacity:.55; }
+  .ss-drop-inner{ color:var(--navy); display:flex; flex-direction:column; align-items:center; gap:8px; }
+  .ss-drop-title{ font-family:'Poppins',sans-serif; color:var(--navy-deep); font-size:1.2rem; margin:6px 0 0; }
+  .ss-drop-hint{ color:var(--muted); font-size:.9rem; margin:0 0 6px; }
+  .ss-pick{ margin-top:8px; }
+  .ss-pick:disabled{ opacity:.5; cursor:not-allowed; transform:none; box-shadow:none; }
+  .ss-tips{ background:var(--sand); border-radius:18px; padding:22px 22px; }
+  .ss-tips-title{ font-weight:700; color:var(--navy-deep); margin:0 0 12px; }
+  .ss-tips ul{ list-style:none; margin:0; padding:0; display:flex; flex-direction:column; gap:10px; }
+  .ss-tips li{ position:relative; padding-left:26px; color:var(--ink); font-size:.95rem; line-height:1.4; }
+  .ss-tips li::before{ content:""; position:absolute; left:0; top:2px; width:18px; height:18px; border-radius:50%; background:var(--teal); -webkit-mask:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Cpath fill='white' d='M9 16.2 4.8 12l-1.4 1.4L9 19 21 7l-1.4-1.4z'/%3E%3C/svg%3E") center/14px no-repeat; mask:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Cpath fill='white' d='M9 16.2 4.8 12l-1.4 1.4L9 19 21 7l-1.4-1.4z'/%3E%3C/svg%3E") center/14px no-repeat; }
+  .ss-consent{ display:flex; gap:11px; align-items:flex-start; margin:0 0 20px; padding:14px 16px; background:#fff; border:1px solid var(--line); border-radius:14px; cursor:pointer; }
+  .ss-consent input{ margin-top:3px; width:18px; height:18px; accent-color:var(--navy); flex:none; cursor:pointer; }
+  .ss-consent span{ font-size:.82rem; color:var(--muted); line-height:1.5; }
+  .ss-consent b{ color:var(--navy); }
+
+  /* ---- loading ---- */
+  .ss-loading{ text-align:center; padding:48px 20px; }
+  .ss-spinner{ width:52px; height:52px; margin:0 auto 20px; border-radius:50%; border:4px solid rgba(27,58,83,.15); border-top-color:var(--navy); animation:ssSpin .9s linear infinite; }
+  @keyframes ssSpin{ to{ transform:rotate(360deg); } }
+  .ss-loading-title{ font-family:'Poppins',sans-serif; color:var(--navy-deep); font-size:1.3rem; margin:0 0 6px; }
+  .ss-loading-sub{ color:var(--muted); font-size:.95rem; margin:0; }
+
+  /* ---- teaser (blur + gate) ---- */
+  .ss-reveal{ display:grid; grid-template-columns:1.1fr 1fr; gap:22px; align-items:center; }
+  .ss-imgwrap{ position:relative; border-radius:16px; overflow:hidden; background:var(--sand); aspect-ratio:4/5; }
+  .ss-imgwrap img{ width:100%; height:100%; object-fit:cover; display:block; transition:filter 1s ease, transform 1s ease; }
+  .ss-imgwrap.is-blurred img{ filter:blur(22px) saturate(1.08); transform:scale(1.12); }
+  .ss-shine{ position:absolute; inset:0; pointer-events:none; background:linear-gradient(115deg,transparent 30%,rgba(255,255,255,.55) 50%,transparent 70%); transform:translateX(-120%); }
+  .ss-imgwrap.is-blurred .ss-shine{ animation:ssShine 2.6s ease-in-out infinite; }
+  @keyframes ssShine{ 0%{ transform:translateX(-120%);} 60%,100%{ transform:translateX(120%);} }
+  .ss-gate-head{ text-align:left; margin-bottom:16px; }
+  .ss-lock{ display:inline-grid; place-items:center; width:42px; height:42px; border-radius:50%; background:linear-gradient(135deg,var(--navy),var(--teal)); color:#fff; margin-bottom:10px; }
+  .ss-gate-head h3{ font-family:'Poppins',sans-serif; color:var(--navy-deep); font-size:1.4rem; margin:0 0 6px; line-height:1.15; }
+  .ss-gate-head p{ color:var(--muted); font-size:.95rem; margin:0; }
+  .ss-field{ margin-bottom:11px; }
+  .ss-field input{ width:100%; padding:13px 16px; border:1.5px solid var(--line); border-radius:12px; background:#fff; font-family:'Manrope',sans-serif; font-size:1rem; color:var(--ink); }
+  .ss-field input:focus{ outline:none; border-color:var(--teal); box-shadow:0 0 0 4px rgba(42,147,184,.1); }
+  .ss-form .btn-primary{ width:100%; justify-content:center; margin-top:4px; }
+  .ss-error{ color:#b3261e; font-size:.88rem; margin:0 0 10px; }
+  .ss-legal{ font-size:.75rem; color:var(--muted); line-height:1.45; margin:12px 0 0; }
+  .ss-btn-spin{ width:18px; height:18px; border-radius:50%; border:2.5px solid rgba(255,255,255,.4); border-top-color:#fff; animation:ssSpin .8s linear infinite; }
+
+  /* ---- done ---- */
+  .ss-done{ display:grid; grid-template-columns:1fr 1fr; gap:26px; align-items:center; }
+  .ss-thumbs{ display:flex; gap:8px; justify-content:center; margin-top:12px; }
+  .ss-thumb{ border:1.5px solid var(--line); background:#fff; color:var(--navy); border-radius:100px; padding:7px 18px; font-family:'Manrope',sans-serif; font-weight:700; font-size:.85rem; cursor:pointer; transition:.2s; }
+  .ss-thumb.is-active{ background:var(--navy); color:#fff; border-color:var(--navy); }
+  .ss-done-cta h3{ font-family:'Poppins',sans-serif; color:var(--navy-deep); font-size:1.5rem; margin:0 0 8px; }
+  .ss-done-cta p{ color:var(--muted); font-size:.98rem; line-height:1.55; margin:0 0 18px; }
+  .ss-done-actions{ display:flex; flex-wrap:wrap; gap:10px; }
+
+  /* ---- erro ---- */
+  .ss-errbox{ text-align:center; padding:34px 20px; color:var(--navy); }
+  .ss-errmsg{ color:var(--ink); font-size:1rem; line-height:1.55; max-width:460px; margin:14px auto 20px; }
+  .ss-errbox .ss-done-actions{ justify-content:center; }
+
+  @media (max-width:720px){
+    .ss{ padding:18px; }
+    .ss-grid, .ss-reveal, .ss-done{ grid-template-columns:1fr; }
+    .ss-imgwrap{ aspect-ratio:1/1; max-width:340px; margin:0 auto; }
+    .ss-gate-head{ text-align:center; }
+    .ss-lock{ margin-left:auto; margin-right:auto; }
+    .ss-only-desktop{ display:none; }
+    .ss-only-mobile{ display:inline; }
+  }
+</style>
+
+<script is:inline>
+(() => {
+  if (window.__ssInit) return;
+  window.__ssInit = true;
+
+  const ENDPOINT = "/api/simular-sorriso";
+
+  // Redimensiona/comprime um dataURL para JPEG (maior borda <= maxEdge).
+  function shrink(dataUrl, maxEdge, quality) {
+    return new Promise((resolve, reject) => {
+      const img = new Image();
+      img.onload = () => {
+        let { width: w, height: h } = img;
+        if (Math.max(w, h) > maxEdge) {
+          const r = maxEdge / Math.max(w, h);
+          w = Math.round(w * r); h = Math.round(h * r);
+        }
+        const c = document.createElement("canvas");
+        c.width = w; c.height = h;
+        const ctx = c.getContext("2d");
+        ctx.drawImage(img, 0, 0, w, h);
+        resolve(c.toDataURL("image/jpeg", quality));
+      };
+      img.onerror = () => reject(new Error("img"));
+      img.src = dataUrl;
+    });
+  }
+
+  function readFile(file) {
+    return new Promise((resolve, reject) => {
+      const fr = new FileReader();
+      fr.onload = () => resolve(fr.result);
+      fr.onerror = () => reject(new Error("file"));
+      fr.readAsDataURL(file);
+    });
+  }
+
+  function initOne(root) {
+    const state = { antes: null, depois: null, busy: false };
+    const $ = (sel) => root.querySelector(sel);
+    const panels = {};
+    root.querySelectorAll("[data-panel]").forEach((p) => (panels[p.dataset.panel] = p));
+    const NAV_OFFSET = 84; // altura do nav fixo + um respiro
+    const scrollCardToTop = () => {
+      requestAnimationFrame(() => {
+        const y = root.getBoundingClientRect().top + window.scrollY - NAV_OFFSET;
+        window.scrollTo({ top: Math.max(0, y), behavior: "smooth" });
+      });
+    };
+    const show = (name) => {
+      Object.entries(panels).forEach(([k, el]) => (el.hidden = k !== name));
+      root.dataset.stage = name;
+      // ao gerar/mostrar o resultado, ancora o card perto do topo (sem a pessoa rolar)
+      if (name === "loading" || name === "teaser" || name === "done") scrollCardToTop();
+    };
+
+    const dropzone = $("[data-drop]");
+    const fileInput = $(".ss-file");
+    const pickBtn = $(".ss-pick");
+    const consent = $(".ss-consent-check");
+    const hp = root.querySelector(".ss-hp");
+
+    // consentimento habilita o upload (processamento da foto só com consentimento)
+    const syncConsent = () => {
+      const ok = consent.checked;
+      pickBtn.disabled = !ok;
+      dropzone.classList.toggle("is-ready", ok);
+    };
+    consent.addEventListener("change", syncConsent);
+    syncConsent();
+
+    pickBtn.addEventListener("click", (e) => { e.stopPropagation(); if (consent.checked) fileInput.click(); });
+    dropzone.addEventListener("click", (e) => {
+      if (e.target.closest(".ss-pick")) return; // o botão tem o próprio handler
+      if (consent.checked) fileInput.click();
+    });
+    ["dragover", "dragenter"].forEach((ev) =>
+      dropzone.addEventListener(ev, (e) => { e.preventDefault(); if (consent.checked) dropzone.classList.add("is-over"); })
+    );
+    ["dragleave", "drop"].forEach((ev) =>
+      dropzone.addEventListener(ev, () => dropzone.classList.remove("is-over"))
+    );
+    dropzone.addEventListener("drop", (e) => {
+      e.preventDefault();
+      if (!consent.checked) return;
+      const f = e.dataTransfer?.files?.[0];
+      if (f) handleFile(f);
+    });
+    fileInput.addEventListener("change", () => {
+      const f = fileInput.files?.[0];
+      if (f) handleFile(f);
+    });
+
+    async function handleFile(file) {
+      if (state.busy) return;
+      if (!file.type.startsWith("image/")) return fail("Envie um arquivo de imagem (JPG, PNG ou WEBP).");
+      state.busy = true;
+      show("loading");
+      try {
+        const raw = await readFile(file);
+        // "antes" leve para exibir e anexar no e-mail
+        state.antes = await shrink(raw, 1280, 0.85);
+        const resp = await fetch(ENDPOINT, {
+          method: "POST",
+          headers: { "content-type": "application/json" },
+          body: JSON.stringify({ action: "gerar", image: state.antes }),
+        });
+        const data = await resp.json().catch(() => ({}));
+        if (!resp.ok || !data.ok) throw new Error(data.error || "Não consegui gerar a simulação agora.");
+        state.depois = data.image; // dataURL (png) nítido
+        $(".ss-result").src = state.depois;
+        $("[data-imgwrap]").classList.add("is-blurred");
+        show("teaser");
+      } catch (err) {
+        fail(err.message || "Algo deu errado. Tente novamente.");
+      } finally {
+        state.busy = false;
+        fileInput.value = "";
+      }
+    }
+
+    function fail(msg) {
+      $("[data-errmsg]").textContent = msg;
+      show("error");
+    }
+
+    // ---- formulário de desbloqueio (lead) ----
+    const form = $(".ss-form");
+    const errEl = $("[data-error]");
+    const revealBtn = $(".ss-reveal-btn");
+    const btnLabel = $(".ss-btn-label");
+    const btnSpin = $(".ss-btn-spin");
+
+    form.addEventListener("submit", async (e) => {
+      e.preventDefault();
+      if (state.busy) return;
+      errEl.hidden = true;
+      const nome = form.nome.value.trim();
+      const whatsapp = form.whatsapp.value.trim();
+      if (nome.length < 2) return showErr("Informe seu nome.");
+      if (whatsapp.replace(/\D/g, "").length < 8) return showErr("Informe um WhatsApp válido (com DDD).");
+      if (hp && hp.value) return; // bot
+
+      state.busy = true;
+      btnLabel.textContent = "Revelando…";
+      btnSpin.hidden = false;
+      revealBtn.disabled = true;
+      try {
+        // comprime o "depois" (png -> jpeg) só para o anexo do e-mail
+        const depoisJpeg = await shrink(state.depois, 1280, 0.9).catch(() => state.depois);
+        await fetch(ENDPOINT, {
+          method: "POST",
+          headers: { "content-type": "application/json" },
+          body: JSON.stringify({
+            action: "lead",
+            nome, whatsapp, consent: true,
+            image: depoisJpeg,
+            imageOriginal: state.antes,
+            fk_hp: hp ? hp.value : "",
+          }),
+        });
+        // desborra na tela mesmo se o e-mail falhar (UX de sucesso)
+        reveal();
+      } catch {
+        reveal();
+      } finally {
+        state.busy = false;
+        revealBtn.disabled = false;
+        btnLabel.textContent = "Revelar meu sorriso";
+        btnSpin.hidden = true;
+      }
+    });
+
+    function showErr(m) { errEl.textContent = m; errEl.hidden = false; }
+
+    function reveal() {
+      $("[data-imgwrap]").classList.remove("is-blurred");
+      // pequena pausa para a animação do desfoque, depois vai para o "done"
+      setTimeout(() => {
+        $(".ss-result-final").src = state.depois;
+        show("done");
+        setupCompare();
+      }, 950);
+    }
+
+    // ---- comparação antes/depois no "done" ----
+    function setupCompare() {
+      const finalImg = $(".ss-result-final");
+      root.querySelectorAll(".ss-thumb").forEach((t) =>
+        t.addEventListener("click", () => {
+          root.querySelectorAll(".ss-thumb").forEach((x) => x.classList.remove("is-active"));
+          t.classList.add("is-active");
+          finalImg.src = t.dataset.show === "antes" ? state.antes : state.depois;
+        })
+      );
+    }
+
+    // ---- CTAs finais ----
+    const agBtn = $(".ss-agendar");
+    if (agBtn) agBtn.addEventListener("click", () => {
+      if (window.gopQuiz) window.gopQuiz.open({ objetivo: "Recuperar um dente perdido", tratamento: "Implantes" });
+      else window.open("https://wa.me/5511985140604", "_blank");
+    });
+    const retryBtn = $(".ss-retry");
+    if (retryBtn) retryBtn.addEventListener("click", () => { state.depois = null; state.antes = null; show("intro"); });
+  }
+
+  const boot = () => document.querySelectorAll(".ss").forEach(initOne);
+  if (document.readyState === "loading") document.addEventListener("DOMContentLoaded", boot);
+  else boot();
+})();
+</script>

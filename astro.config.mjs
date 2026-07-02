@@ -99,10 +99,64 @@ function searchDevPlugin() {
   };
 }
 
+// Plugin SÓ DE DESENVOLVIMENTO: faz o `astro dev` servir POST /api/simular-sorriso,
+// com o mesmo núcleo da função serverless de produção (api/_simular-sorriso-core.mjs).
+// Duas ações: {action:"gerar"} (Gemini image) e {action:"lead"} (Resend). Não altera o build.
+function simuladorDevPlugin() {
+  return {
+    name: "gop-simulador-dev",
+    apply: "serve",
+    async configureServer(server) {
+      loadLocalEnv();
+      const core = await import("./api/_simular-sorriso-core.mjs");
+
+      server.middlewares.use(async (req, res, next) => {
+        if (!req.url || !req.url.startsWith("/api/simular-sorriso")) return next();
+        res.setHeader("Content-Type", "application/json; charset=utf-8");
+        res.setHeader("Cache-Control", "no-store");
+        if (req.method !== "POST") {
+          res.statusCode = 405;
+          return res.end(JSON.stringify({ ok: false, error: "Method Not Allowed" }));
+        }
+        const ip = req.socket.remoteAddress || "local";
+        const body = await core.readJson(req);
+        const action = body?.action;
+
+        if (action === "gerar") {
+          if (!core.rateLimitGerar(ip)) {
+            res.statusCode = 429;
+            return res.end(JSON.stringify({ ok: false, code: "rate", error: "Muitas simulações em pouco tempo." }));
+          }
+          const out = await core.handleGerar(body);
+          res.statusCode = out.ok ? 200 : out.status || 400;
+          return res.end(
+            JSON.stringify(out.ok ? { ok: true, image: out.image } : { ok: false, code: out.code, error: out.error })
+          );
+        }
+        if (action === "lead") {
+          if (!core.rateLimitLead(ip)) {
+            res.statusCode = 429;
+            return res.end(JSON.stringify({ ok: false, error: "Muitos envios em pouco tempo." }));
+          }
+          const v = core.validateLead(body);
+          if (!v.ok) {
+            res.statusCode = 400;
+            return res.end(JSON.stringify({ ok: false, error: v.error }));
+          }
+          if (!v.bot && v.data) await core.handleLead(v.data);
+          return res.end(JSON.stringify({ ok: true }));
+        }
+        res.statusCode = 400;
+        return res.end(JSON.stringify({ ok: false, error: "Ação inválida." }));
+      });
+    },
+  };
+}
+
 // https://astro.build
 export default defineConfig({
   site: "https://gopimplantes.br",
   // emite "pagina.html" em vez de "pagina/index.html" — URLs com extensão .html
   build: { format: "file" },
-  vite: { plugins: [chatDevPlugin(), searchDevPlugin()] },
+  vite: { plugins: [chatDevPlugin(), searchDevPlugin(), simuladorDevPlugin()] },
 });
