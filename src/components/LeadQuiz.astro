@@ -1,8 +1,9 @@
 ---
-// Quiz de lead "lite" → WhatsApp. 100% client, sem backend e sem armazenar nada
-// (apenas localStorage para lembrar o nome na sessão). Monta uma mensagem rica e
-// abre o WhatsApp da clínica já com o contexto. Inclua UMA vez por página
-// (já vem global pelo BaseLayout). Abra de qualquer lugar com window.gopQuiz.open().
+// Quiz de lead em 3 etapas → WhatsApp. 100% client, sem backend (só localStorage
+// para lembrar nome/telefone na sessão). Etapa 1 capta nome + WhatsApp, etapa 2
+// qualifica o objetivo/horário, etapa 3 monta a mensagem e abre o WhatsApp da
+// clínica já com o contexto. Inclua UMA vez por página (já vem global pelo
+// BaseLayout). Abra de qualquer lugar com window.gopQuiz.open({ tratamento, objetivo }).
 ---
 
 <div class="lq-overlay" id="lqOverlay" hidden aria-hidden="true">
@@ -12,49 +13,67 @@
     </button>
 
     <div class="lq-head">
-      <span class="lq-eyebrow">Agende em 30 segundos</span>
+      <span class="lq-eyebrow">Agende em 1 minuto</span>
       <h3 id="lqTitle">Vamos cuidar do seu sorriso</h3>
       <p class="lq-interesse" id="lqInteresse" hidden></p>
     </div>
 
+    <ol class="lq-steps" id="lqSteps" aria-label="Etapas">
+      <li data-s="1">Contato</li>
+      <li data-s="2">Seu objetivo</li>
+      <li data-s="3">WhatsApp</li>
+    </ol>
+
     <div class="lq-step" data-step="1">
-      <p class="lq-q">Qual é o seu objetivo?</p>
-      <div class="lq-chips" id="lqGoals">
-        <button type="button" class="lq-chip" data-val="Recuperar um dente perdido">Recuperar um dente perdido</button>
-        <button type="button" class="lq-chip" data-val="Alinhar os dentes">Alinhar os dentes</button>
-        <button type="button" class="lq-chip" data-val="Estética e clareamento do sorriso">Estética / clarear o sorriso</button>
-        <button type="button" class="lq-chip" data-val="Dor ou urgência">Dor ou urgência</button>
-        <button type="button" class="lq-chip" data-val="Check-up e limpeza">Check-up e limpeza</button>
-        <button type="button" class="lq-chip" data-val="Outro assunto">Outro</button>
-      </div>
+      <label class="lq-label" for="lqNome">Seu nome</label>
+      <input type="text" id="lqNome" class="lq-input" autocomplete="given-name" placeholder="Como podemos te chamar?" />
+      <p class="lq-err" id="lqErrNome" role="alert"></p>
+
+      <label class="lq-label" for="lqTel">Seu WhatsApp com DDD</label>
+      <input type="tel" id="lqTel" class="lq-input" autocomplete="tel-national" inputmode="numeric" placeholder="(11) 90000-0000" />
+      <p class="lq-err" id="lqErrTel" role="alert"></p>
+
+      <p class="lq-note">Seus dados são usados apenas pela GOP Implantes para falar com você sobre a sua avaliação, conforme a LGPD.</p>
     </div>
 
     <div class="lq-step" data-step="2" hidden>
-      <p class="lq-q">Melhor horário para falarmos?</p>
-      <div class="lq-chips" id="lqTimes">
-        <button type="button" class="lq-chip" data-val="De manhã">De manhã</button>
-        <button type="button" class="lq-chip" data-val="À tarde">À tarde</button>
-        <button type="button" class="lq-chip" data-val="À noite">À noite</button>
-        <button type="button" class="lq-chip" data-val="Qualquer horário">Qualquer horário</button>
-      </div>
+      <fieldset class="lq-fieldset">
+        <legend class="lq-q">Qual é o seu objetivo?</legend>
+        <div class="lq-chips" id="lqGoals">
+          <button type="button" class="lq-chip" data-val="Recuperar um dente perdido">Recuperar um dente perdido</button>
+          <button type="button" class="lq-chip" data-val="Alinhar os dentes">Alinhar os dentes</button>
+          <button type="button" class="lq-chip" data-val="Estética e clareamento do sorriso">Estética / clarear o sorriso</button>
+          <button type="button" class="lq-chip" data-val="Dor ou urgência">Dor ou urgência</button>
+          <button type="button" class="lq-chip" data-val="Check-up e limpeza">Check-up e limpeza</button>
+          <button type="button" class="lq-chip" data-val="Outro assunto">Outro</button>
+        </div>
+      </fieldset>
+
+      <fieldset class="lq-fieldset">
+        <legend class="lq-q">Melhor horário para falarmos?</legend>
+        <div class="lq-chips" id="lqTimes">
+          <button type="button" class="lq-chip" data-val="De manhã">De manhã</button>
+          <button type="button" class="lq-chip" data-val="À tarde">À tarde</button>
+          <button type="button" class="lq-chip" data-val="À noite">À noite</button>
+          <button type="button" class="lq-chip" data-val="Qualquer horário">Qualquer horário</button>
+        </div>
+      </fieldset>
+      <p class="lq-err" id="lqErrQ" role="alert"></p>
     </div>
 
     <div class="lq-step" data-step="3" hidden>
-      <p class="lq-q">Como podemos te chamar?</p>
-      <input type="text" id="lqName" class="lq-input" placeholder="Seu nome (pode ser só o primeiro)" autocomplete="given-name" />
-      <p class="lq-note">É rapidinho e sem compromisso — você fala direto com a nossa equipe no WhatsApp.</p>
+      <p class="lq-lead" id="lqLead3">Recebemos suas respostas 🙂</p>
+      <dl class="lq-recap" id="lqRecap"></dl>
+      <a class="lq-go" id="lqGo" href="#" target="_blank" rel="noopener" data-direct-wpp>
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M12 2a10 10 0 0 0-8.6 15l-1.3 4.7 4.8-1.3A10 10 0 1 0 12 2Zm5.3 14.2c-.2.6-1.3 1.2-1.8 1.2-.5.1-1 .1-1.6-.1-.4-.1-.9-.3-1.5-.6-2.7-1.2-4.5-3.9-4.6-4.1-.1-.2-1.1-1.4-1.1-2.7 0-1.3.7-1.9 .9-2.2.2-.2.5-.3.7-.3h.5c.2 0 .4 0 .6.5l.8 1.9c.1.2.1.4 0 .5l-.4.6c-.1.2-.3.3-.1.6.2.3.8 1.3 1.7 2 .8.5 1.1.6 1.4.5.2-.1.4-.4.6-.7.2-.3.4-.2.6-.2l1.7.8c.2.1.4.2.4.4.1.2.1.9-.1 1.5Z"/></svg>
+        Falar no WhatsApp agora
+      </a>
+      <p class="lq-alt">Prefere esperar? Nossa equipe te chama no número <strong id="lqTelRecap"></strong> em horário comercial.</p>
     </div>
 
     <div class="lq-foot">
-      <div class="lq-dots" id="lqDots"><span class="on"></span><span></span><span></span></div>
-      <div class="lq-actions">
-        <button type="button" class="lq-back" id="lqBack" hidden>Voltar</button>
-        <button type="button" class="lq-next" id="lqNext" hidden>Continuar</button>
-        <a class="lq-go" id="lqGo" href="#" target="_blank" rel="noopener" data-direct-wpp hidden>
-          <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M12 2a10 10 0 0 0-8.6 15l-1.3 4.7 4.8-1.3A10 10 0 1 0 12 2Zm5.3 14.2c-.2.6-1.3 1.2-1.8 1.2-.5.1-1 .1-1.6-.1-.4-.1-.9-.3-1.5-.6-2.7-1.2-4.5-3.9-4.6-4.1-.1-.2-1.1-1.4-1.1-2.7 0-1.3.7-1.9 .9-2.2.2-.2.5-.3.7-.3h.5c.2 0 .4 0 .6.5l.8 1.9c.1.2.1.4 0 .5l-.4.6c-.1.2-.3.3-.1.6.2.3.8 1.3 1.7 2 .8.5 1.1.6 1.4.5.2-.1.4-.4.6-.7.2-.3.4-.2.6-.2l1.7.8c.2.1.4.2.4.4.1.2.1.9-.1 1.5Z"/></svg>
-          Abrir no WhatsApp
-        </a>
-      </div>
+      <button type="button" class="lq-back" id="lqBack" hidden>Voltar</button>
+      <button type="button" class="lq-next" id="lqNext">Continuar</button>
     </div>
   </div>
 </div>
@@ -70,34 +89,67 @@
   .lq-overlay{ position:fixed; inset:0; z-index:200; display:none; align-items:center; justify-content:center; padding:20px; background:rgba(11,24,40,.55); backdrop-filter:blur(4px); -webkit-backdrop-filter:blur(4px); }
   .lq-overlay.open{ display:flex; animation:lqFade .2s ease; }
   @keyframes lqFade{ from{opacity:0} to{opacity:1} }
-  .lq-card{ position:relative; width:100%; max-width:440px; background:var(--cream); border-radius:24px; box-shadow:0 40px 90px -30px rgba(11,24,40,.6); padding:30px 26px 22px; max-height:calc(100vh - 40px); overflow:auto; animation:lqUp .26s cubic-bezier(.2,.8,.2,1); }
+  .lq-card{ position:relative; width:100%; max-width:480px; background:var(--cream); border-radius:24px; box-shadow:0 40px 90px -30px rgba(11,24,40,.6); padding:30px 26px 24px; max-height:calc(100vh - 40px); overflow:auto; animation:lqUp .26s cubic-bezier(.2,.8,.2,1); }
   @keyframes lqUp{ from{transform:translateY(14px); opacity:0} to{transform:none; opacity:1} }
-  .lq-close{ position:absolute; top:14px; right:14px; width:36px; height:36px; display:grid; place-items:center; border:0; border-radius:50%; background:var(--sand); color:var(--navy); cursor:pointer; transition:.2s; }
+  .lq-close{ position:absolute; top:14px; right:14px; width:36px; height:36px; display:grid; place-items:center; border:0; border-radius:50%; background:var(--sand); color:var(--navy); cursor:pointer; transition:.2s; z-index:2; }
   .lq-close:hover{ background:var(--navy); color:#fff; }
-  .lq-head{ margin-bottom:18px; padding-right:24px; }
+  .lq-head{ margin-bottom:16px; padding-right:24px; }
   .lq-eyebrow{ font-family:'Manrope',sans-serif; font-weight:700; font-size:.74rem; letter-spacing:.14em; text-transform:uppercase; color:var(--teal); }
   .lq-head h3{ font-family:'Poppins',sans-serif; font-weight:600; color:var(--navy-deep); font-size:1.5rem; margin:6px 0 0; line-height:1.15; }
   .lq-interesse{ margin:10px 0 0; font-size:.86rem; color:var(--navy); background:var(--sand); border-radius:10px; padding:7px 12px; display:inline-block; }
-  .lq-q{ font-weight:700; color:var(--ink); margin:0 0 12px; font-size:1rem; }
+
+  /* progresso: sequência real de 3 passos */
+  .lq-steps{ display:grid; grid-template-columns:repeat(3,1fr); gap:8px; margin-bottom:22px; list-style:none; }
+  .lq-steps li{ font-family:'Manrope',sans-serif; font-size:.74rem; font-weight:700; color:var(--muted); padding-top:9px; border-top:3px solid var(--line); transition:border-color .3s,color .3s; }
+  .lq-steps li.on{ border-color:var(--teal); color:var(--navy-deep); }
+  .lq-steps li.done{ border-color:var(--sky); }
+
+  .lq-step{ display:block; }
+  .lq-step[hidden]{ display:none; }
+  @keyframes lqStepIn{ from{opacity:0; transform:translateY(8px)} to{opacity:1; transform:none} }
+  .lq-step{ animation:lqStepIn .3s ease; }
+  @media (prefers-reduced-motion:reduce){ .lq-step{ animation:none; } .lq-steps li{ transition:none; } }
+
+  .lq-label{ display:block; font-family:'Manrope',sans-serif; font-weight:700; color:var(--ink); margin-bottom:8px; font-size:.94rem; }
+  .lq-input{ width:100%; font-family:'Manrope',sans-serif; font-size:16px; color:var(--ink); background:#fff; border:1.5px solid var(--line); border-radius:14px; padding:14px 16px; margin-bottom:6px; outline:none; transition:.18s; }
+  .lq-input::placeholder{ color:var(--muted); }
+  .lq-input:focus{ border-color:var(--teal); box-shadow:0 0 0 4px rgba(42,147,184,.1); }
+  .lq-err{ min-height:20px; font-size:.82rem; color:#c0392b; margin:0 0 8px; }
+  .lq-note{ font-size:.8rem; color:var(--muted); margin-top:10px; line-height:1.5; }
+
+  .lq-fieldset{ border:0; margin:0 0 20px; }
+  .lq-fieldset:last-of-type{ margin-bottom:0; }
+  .lq-q{ font-family:'Poppins',sans-serif; font-weight:600; color:var(--navy-deep); font-size:1rem; margin:0 0 12px; line-height:1.3; }
   .lq-chips{ display:flex; flex-wrap:wrap; gap:9px; }
   .lq-chip{ font-family:'Manrope',sans-serif; font-size:.9rem; font-weight:600; color:var(--ink); background:#fff; border:1.5px solid var(--line); border-radius:100px; padding:10px 16px; cursor:pointer; transition:.18s; }
   .lq-chip:hover{ border-color:var(--teal); }
   .lq-chip.sel{ background:var(--navy); border-color:var(--navy); color:#fff; }
-  .lq-input{ width:100%; font-family:'Manrope',sans-serif; font-size:16px; padding:14px 16px; border:1.5px solid var(--line); border-radius:14px; background:#fff; color:var(--ink); outline:none; transition:.18s; }
-  .lq-input:focus{ border-color:var(--teal); }
-  .lq-note{ font-size:.82rem; color:var(--muted); margin:12px 0 0; line-height:1.5; }
-  .lq-foot{ display:flex; align-items:center; justify-content:space-between; gap:14px; margin-top:24px; }
-  .lq-dots{ display:flex; gap:6px; }
-  .lq-dots span{ width:7px; height:7px; border-radius:50%; background:var(--line); transition:.2s; }
-  .lq-dots span.on{ background:var(--teal); transform:scale(1.2); }
-  .lq-actions{ display:flex; align-items:center; gap:8px; }
-  .lq-back{ font-family:'Manrope',sans-serif; font-weight:600; font-size:.9rem; color:var(--muted); background:none; border:0; cursor:pointer; padding:11px 8px; }
-  .lq-back:hover{ color:var(--ink); }
-  .lq-next{ font-family:'Manrope',sans-serif; font-weight:700; font-size:.92rem; color:#fff; background:linear-gradient(135deg,var(--navy),var(--teal)); border:0; border-radius:100px; padding:12px 24px; cursor:pointer; transition:.2s; }
-  .lq-next:hover{ transform:translateY(-2px); box-shadow:0 16px 30px -16px rgba(42,147,184,.6); }
-  .lq-go{ display:inline-flex; align-items:center; gap:8px; font-family:'Manrope',sans-serif; font-weight:700; font-size:.92rem; color:#fff; background:#25d366; border-radius:100px; padding:12px 22px; text-decoration:none; transition:.2s; }
+
+  .lq-lead{ font-family:'Poppins',sans-serif; font-weight:600; color:var(--navy-deep); font-size:1.08rem; margin:0 0 16px; line-height:1.35; }
+  .lq-recap{ background:#fff; border:1px solid var(--line); border-left:4px solid var(--teal); border-radius:14px; padding:16px 18px; margin:0 0 20px; }
+  .lq-recap dt{ font-family:'Manrope',sans-serif; color:var(--muted); font-size:.76rem; text-transform:uppercase; letter-spacing:.06em; font-weight:700; }
+  .lq-recap dd{ margin:2px 0 10px; font-weight:600; color:var(--ink); }
+  .lq-recap dd:last-child{ margin-bottom:0; }
+  .lq-alt{ font-size:.86rem; color:var(--muted); margin-top:16px; line-height:1.5; text-align:center; }
+  .lq-alt strong{ color:var(--ink); }
+
+  .lq-go{ display:flex; align-items:center; justify-content:center; gap:10px; width:100%; min-height:62px; font-family:'Manrope',sans-serif; font-weight:700; font-size:1rem; color:#fff; background:#25d366; border-radius:100px; text-decoration:none; box-shadow:0 16px 34px -14px rgba(37,211,102,.65); transition:.2s; }
   .lq-go:hover{ background:#1ebe5d; transform:translateY(-2px); }
-  @media (max-width:480px){ .lq-card{ padding:26px 18px 18px; border-radius:20px; } .lq-head h3{ font-size:1.32rem; } }
+  .lq-go svg{ flex-shrink:0; }
+
+  .lq-foot{ display:flex; align-items:center; justify-content:flex-end; gap:14px; margin-top:24px; }
+  .lq-back{ font-family:'Manrope',sans-serif; font-weight:600; font-size:.9rem; color:var(--muted); background:none; border:0; cursor:pointer; padding:11px 8px; margin-right:auto; }
+  .lq-back:hover{ color:var(--ink); }
+  .lq-next{ font-family:'Manrope',sans-serif; font-weight:700; font-size:.92rem; color:#fff; background:linear-gradient(135deg,var(--navy),var(--teal)); border:0; border-radius:100px; padding:14px 28px; cursor:pointer; transition:.2s; }
+  .lq-next:hover{ transform:translateY(-2px); box-shadow:0 16px 30px -16px rgba(42,147,184,.6); }
+
+  @media (max-width:480px){
+    .lq-card{ padding:26px 18px 18px; border-radius:20px; }
+    .lq-head h3{ font-size:1.32rem; }
+    .lq-next{ width:100%; justify-content:center; }
+    .lq-foot{ flex-wrap:wrap; }
+    .lq-back{ margin-right:0; order:2; width:100%; text-align:center; }
+  }
 </style>
 
 <script>
@@ -106,73 +158,134 @@
     if (!overlay || window.gopQuiz) return; // só inicializa uma vez
 
     const steps = [...overlay.querySelectorAll(".lq-step")];
-    const dots = [...document.getElementById("lqDots").children];
+    const stepsNav = [...document.getElementById("lqSteps").children];
     const goalsWrap = document.getElementById("lqGoals");
     const timesWrap = document.getElementById("lqTimes");
-    const nameInput = document.getElementById("lqName");
+    const nomeInput = document.getElementById("lqNome");
+    const telInput = document.getElementById("lqTel");
+    const errNome = document.getElementById("lqErrNome");
+    const errTel = document.getElementById("lqErrTel");
+    const errQ = document.getElementById("lqErrQ");
     const interesse = document.getElementById("lqInteresse");
+    const lead3 = document.getElementById("lqLead3");
+    const recap = document.getElementById("lqRecap");
+    const telRecap = document.getElementById("lqTelRecap");
     const btnBack = document.getElementById("lqBack");
     const btnNext = document.getElementById("lqNext");
     const btnGo = document.getElementById("lqGo");
     const WPP = "5511985140604";
 
-    const state = { step: 1, objetivo: "", horario: "", nome: "", tratamento: "" };
+    const state = { step: 1, nome: "", telefone: "", objetivo: "", horario: "", tratamento: "" };
 
     function selectChip(wrap, val) {
       [...wrap.children].forEach((c) => c.classList.toggle("sel", c.dataset.val === val));
     }
 
+    // máscara de telefone BR: (11) 90000-0000
+    telInput.addEventListener("input", () => {
+      let d = telInput.value.replace(/\D/g, "").slice(0, 11);
+      let o = d;
+      if (d.length > 2) o = "(" + d.slice(0, 2) + ") " + d.slice(2);
+      if (d.length > 7) o = "(" + d.slice(0, 2) + ") " + d.slice(2, 7) + "-" + d.slice(7);
+      telInput.value = o;
+    });
+
     function render() {
       steps.forEach((s) => (s.hidden = Number(s.dataset.step) !== state.step));
-      dots.forEach((d, i) => d.classList.toggle("on", i < state.step));
+      stepsNav.forEach((li) => {
+        const s = Number(li.dataset.s);
+        li.classList.toggle("on", s === state.step);
+        li.classList.toggle("done", s < state.step);
+      });
       btnBack.hidden = state.step === 1;
       const last = state.step === 3;
-      btnNext.hidden = true; // passos 1 e 2 avançam sozinhos ao escolher a opção
-      btnGo.hidden = !last;
-      if (last) setTimeout(() => nameInput.focus(), 60);
+      btnNext.hidden = last;
+      if (state.step === 1) setTimeout(() => nomeInput.focus(), 60);
     }
 
     function buildLink() {
-      const nome = (nameInput.value || "").trim();
-      state.nome = nome;
-      let msg = `Olá! ${nome ? "Sou " + nome + ". " : ""}Vim pelo site da GOP Implantes 🦷`;
+      let msg = `Olá! Sou ${state.nome}. Vim pelo site da GOP Implantes 🦷`;
       if (state.tratamento) msg += `\nTenho interesse em: ${state.tratamento}`;
       if (state.objetivo) msg += `\nMeu objetivo: ${state.objetivo}`;
       if (state.horario) msg += `\nMelhor horário para contato: ${state.horario}`;
+      msg += `\nMeu WhatsApp: ${state.telefone}`;
       msg += `\nGostaria de agendar uma avaliação. 🙂`;
-      try { if (nome) localStorage.setItem("gop_lead_nome", nome); } catch (e) {}
       return `https://wa.me/${WPP}?text=${encodeURIComponent(msg)}`;
     }
 
-    // avança sozinho ao escolher (sem botão "Continuar" desabilitado travando o fluxo)
-    let advancing = false;
-    function autoAdvance() {
-      render();
-      if (state.step < 3 && !advancing) {
-        advancing = true;
-        setTimeout(() => { state.step++; advancing = false; render(); }, 240);
-      }
+    function showRecap() {
+      const primeiro = state.nome.split(" ")[0] || "";
+      lead3.textContent = (primeiro ? primeiro.charAt(0).toUpperCase() + primeiro.slice(1) + ", recebemos" : "Recebemos") + " suas respostas 🙂";
+      recap.innerHTML = "";
+      const linhas = [];
+      if (state.tratamento) linhas.push(["Tratamento", state.tratamento]);
+      if (state.objetivo) linhas.push(["Objetivo", state.objetivo]);
+      if (state.horario) linhas.push(["Melhor horário", state.horario]);
+      linhas.forEach(([k, v]) => {
+        const dt = document.createElement("dt"); dt.textContent = k;
+        const dd = document.createElement("dd"); dd.textContent = v;
+        recap.append(dt, dd);
+      });
+      telRecap.textContent = state.telefone;
+      btnGo.href = buildLink();
     }
+
+    // ETAPA 1 → nome + telefone
+    function goStep2() {
+      const nome = nomeInput.value.trim();
+      const digits = telInput.value.replace(/\D/g, "");
+      let ok = true;
+      errNome.textContent = ""; errTel.textContent = "";
+      if (nome.length < 2) { errNome.textContent = "Digite seu nome para continuar."; ok = false; }
+      if (!/^\d{2}9\d{8}$/.test(digits)) { errTel.textContent = "Confira o número: DDD + 9 dígitos do celular."; ok = false; }
+      if (!ok) return;
+      state.nome = nome;
+      state.telefone = "(" + digits.slice(0, 2) + ") " + digits.slice(2, 7) + "-" + digits.slice(7);
+      try { localStorage.setItem("gop_lead_nome", state.nome); localStorage.setItem("gop_lead_tel", telInput.value); } catch (e) {}
+      state.step = 2;
+      render();
+    }
+
+    // ETAPA 2 → objetivo + horário
+    function goStep3() {
+      errQ.textContent = "";
+      if (!state.objetivo || !state.horario) {
+        errQ.textContent = "Escolha uma opção em cada pergunta para seguir.";
+        return;
+      }
+      state.step = 3;
+      showRecap();
+      render();
+    }
+
     goalsWrap.addEventListener("click", (e) => {
       const b = e.target.closest(".lq-chip"); if (!b) return;
-      state.objetivo = b.dataset.val; selectChip(goalsWrap, state.objetivo); autoAdvance();
+      state.objetivo = b.dataset.val; selectChip(goalsWrap, state.objetivo);
     });
     timesWrap.addEventListener("click", (e) => {
       const b = e.target.closest(".lq-chip"); if (!b) return;
-      state.horario = b.dataset.val; selectChip(timesWrap, state.horario); autoAdvance();
+      state.horario = b.dataset.val; selectChip(timesWrap, state.horario);
     });
-    btnNext.addEventListener("click", () => { if (state.step < 3) { state.step++; render(); } });
+
+    btnNext.addEventListener("click", () => {
+      if (state.step === 1) goStep2();
+      else if (state.step === 2) goStep3();
+    });
     btnBack.addEventListener("click", () => { if (state.step > 1) { state.step--; render(); } });
-    btnGo.addEventListener("click", () => { btnGo.href = buildLink(); close(); });
+    btnGo.addEventListener("click", () => close());
 
     function open(opts = {}) {
       state.step = 1;
       state.objetivo = opts.objetivo || "";
       state.horario = "";
       state.tratamento = opts.tratamento || "";
+      errNome.textContent = ""; errTel.textContent = ""; errQ.textContent = "";
       if (state.objetivo) selectChip(goalsWrap, state.objetivo); else selectChip(goalsWrap, "");
       selectChip(timesWrap, "");
-      try { nameInput.value = localStorage.getItem("gop_lead_nome") || ""; } catch (e) { nameInput.value = ""; }
+      try {
+        nomeInput.value = localStorage.getItem("gop_lead_nome") || "";
+        telInput.value = localStorage.getItem("gop_lead_tel") || "";
+      } catch (e) { nomeInput.value = ""; telInput.value = ""; }
       interesse.hidden = !state.tratamento;
       if (state.tratamento) interesse.textContent = "Interesse: " + state.tratamento;
       overlay.hidden = false; overlay.setAttribute("aria-hidden", "false");
