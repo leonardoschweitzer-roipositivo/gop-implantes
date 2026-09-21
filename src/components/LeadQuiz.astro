@@ -38,6 +38,16 @@
 
     <div class="lq-step" data-step="2" hidden>
       <fieldset class="lq-fieldset">
+        <legend class="lq-q">Quantos dentes estão faltando hoje?</legend>
+        <div class="lq-chips" id="lqTeeth">
+          <button type="button" class="lq-chip" data-val="1 dente" data-faixa="C" data-value="50">1 dente</button>
+          <button type="button" class="lq-chip" data-val="De 2 a 5 dentes" data-faixa="B" data-value="150">De 2 a 5 dentes</button>
+          <button type="button" class="lq-chip" data-val="Mais de 5 dentes" data-faixa="A" data-value="300">Mais de 5 dentes</button>
+          <button type="button" class="lq-chip" data-val="Uso dentadura ou prótese móvel" data-faixa="A" data-value="300">Uso dentadura ou prótese móvel</button>
+        </div>
+      </fieldset>
+
+      <fieldset class="lq-fieldset">
         <legend class="lq-q">Qual é o seu objetivo?</legend>
         <div class="lq-chips" id="lqGoals">
           <button type="button" class="lq-chip" data-val="Recuperar um dente perdido">Recuperar um dente perdido</button>
@@ -159,6 +169,7 @@
 
     const steps = [...overlay.querySelectorAll(".lq-step")];
     const stepsNav = [...document.getElementById("lqSteps").children];
+    const teethWrap = document.getElementById("lqTeeth");
     const goalsWrap = document.getElementById("lqGoals");
     const timesWrap = document.getElementById("lqTimes");
     const nomeInput = document.getElementById("lqNome");
@@ -174,8 +185,47 @@
     const btnNext = document.getElementById("lqNext");
     const btnGo = document.getElementById("lqGo");
     const WPP = "5511985140604";
+    const WEBHOOK_URL = import.meta.env.PUBLIC_LEAD_WEBHOOK_URL;
 
-    const state = { step: 1, nome: "", telefone: "", objetivo: "", horario: "", tratamento: "", origem: "" };
+    // gclid/gbraid/wbraid/UTMs: pega da querystring da primeira página em que o
+    // lead caiu e guarda em sessionStorage, pra acompanhar ele até o fim do quiz
+    // mesmo que ele navegue por outras páginas do site antes de converter.
+    function captureAttribution() {
+      const keys = ["gclid", "gbraid", "wbraid", "utm_source", "utm_medium", "utm_campaign", "utm_term", "utm_content"];
+      const fromUrl = {};
+      const params = new URLSearchParams(location.search);
+      let found = false;
+      keys.forEach((k) => { const v = params.get(k); if (v) { fromUrl[k] = v; found = true; } });
+      try {
+        if (found) { sessionStorage.setItem("gop_attribution", JSON.stringify(fromUrl)); return fromUrl; }
+        const stored = sessionStorage.getItem("gop_attribution");
+        if (stored) return JSON.parse(stored);
+      } catch (e) {}
+      return fromUrl;
+    }
+    const attribution = captureAttribution();
+
+    function sendWebhook(event, data) {
+      const payload = Object.assign({ event: event, page_url: location.href }, data);
+      if (!WEBHOOK_URL) {
+        if (import.meta.env.DEV) console.log("[lead webhook]", payload);
+        return;
+      }
+      try {
+        fetch(WEBHOOK_URL, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          keepalive: true,
+          body: JSON.stringify(payload),
+        }).catch(() => {});
+      } catch (e) {}
+    }
+
+    const state = {
+      step: 1, nome: "", telefone: "", dentes: "", faixa: "", valorConversao: 0,
+      objetivo: "", horario: "", tratamento: "", origem: "",
+      leadId: "", sentStep1: false, sentStep2: false, sentWa: false,
+    };
 
     function selectChip(wrap, val) {
       [...wrap.children].forEach((c) => c.classList.toggle("sel", c.dataset.val === val));
@@ -220,6 +270,7 @@
       recap.innerHTML = "";
       const linhas = [];
       if (state.tratamento) linhas.push(["Tratamento", state.tratamento]);
+      if (state.dentes) linhas.push(["Dentes faltando", state.dentes]);
       if (state.objetivo) linhas.push(["Objetivo", state.objetivo]);
       if (state.horario) linhas.push(["Melhor horário", state.horario]);
       if (state.origem) linhas.push(["Veio por", state.origem]);
@@ -230,6 +281,61 @@
       });
       telRecap.textContent = state.telefone;
       btnGo.href = buildLink();
+    }
+
+    // conversão Google Ads da Etapa 1 (primária): telefone p/ conversões otimizadas
+    // + evento, uma vez por preenchimento (guardado em state.sentStep1)
+    function fireStep1Conversion(phoneE164) {
+      if (state.sentStep1) return;
+      state.sentStep1 = true;
+      if (typeof window.gtag === "function") {
+        window.gtag("set", "user_data", { phone_number: phoneE164 });
+        window.gtag("event", "conversion", {
+          send_to: "AW-10906767237/2cKzCJHqrYAdEIWf4NAo",
+          transaction_id: state.leadId + "-e1",
+        });
+      }
+      window.dataLayer = window.dataLayer || [];
+      window.dataLayer.push({ event: "gop_lead_etapa1", lead_id: state.leadId });
+      sendWebhook("lead_etapa1", Object.assign({
+        lead_id: state.leadId, nome: state.nome, telefone: phoneE164,
+      }, attribution));
+    }
+
+    // conversão Google Ads da Etapa 2 (secundária, com valor conforme a faixa do lead)
+    function fireStep2Conversion(phoneE164) {
+      if (state.sentStep2) return;
+      state.sentStep2 = true;
+      if (typeof window.gtag === "function") {
+        window.gtag("event", "conversion", {
+          send_to: "AW-10906767237/7vIICIvqrYAdEIWf4NAo",
+          value: state.valorConversao,
+          currency: "BRL",
+          transaction_id: state.leadId,
+        });
+      }
+      window.dataLayer = window.dataLayer || [];
+      window.dataLayer.push({ event: "gop_lead_qualificado", lead_id: state.leadId, faixa: state.faixa, value: state.valorConversao });
+      sendWebhook("lead_qualificado", Object.assign({
+        lead_id: state.leadId, nome: state.nome, telefone: phoneE164,
+        dentes: state.dentes, objetivo: state.objetivo, horario: state.horario,
+        faixa: state.faixa, value: state.valorConversao,
+      }, attribution));
+    }
+
+    // conversão Google Ads do clique no WhatsApp (secundária)
+    function fireWhatsappConversion() {
+      if (state.sentWa) return;
+      state.sentWa = true;
+      if (typeof window.gtag === "function") {
+        window.gtag("event", "conversion", {
+          send_to: "AW-10906767237/IREGCI7qrYAdEIWf4NAo",
+          transaction_id: state.leadId + "-wa",
+        });
+      }
+      window.dataLayer = window.dataLayer || [];
+      window.dataLayer.push({ event: "gop_whatsapp_click", lead_id: state.leadId });
+      sendWebhook("whatsapp_click", { lead_id: state.leadId });
     }
 
     // ETAPA 1 → nome + telefone
@@ -246,20 +352,28 @@
       try { localStorage.setItem("gop_lead_nome", state.nome); localStorage.setItem("gop_lead_tel", telInput.value); } catch (e) {}
       state.step = 2;
       render();
+      fireStep1Conversion("+55" + digits);
     }
 
-    // ETAPA 2 → objetivo + horário
+    // ETAPA 2 → dentes faltando + objetivo + horário
     function goStep3() {
       errQ.textContent = "";
-      if (!state.objetivo || !state.horario) {
+      if (!state.dentes || !state.objetivo || !state.horario) {
         errQ.textContent = "Escolha uma opção em cada pergunta para seguir.";
         return;
       }
       state.step = 3;
       showRecap();
       render();
+      const digits = telInput.value.replace(/\D/g, "");
+      fireStep2Conversion("+55" + digits);
     }
 
+    teethWrap.addEventListener("click", (e) => {
+      const b = e.target.closest(".lq-chip"); if (!b) return;
+      state.dentes = b.dataset.val; state.faixa = b.dataset.faixa; state.valorConversao = Number(b.dataset.value);
+      selectChip(teethWrap, state.dentes);
+    });
     goalsWrap.addEventListener("click", (e) => {
       const b = e.target.closest(".lq-chip"); if (!b) return;
       state.objetivo = b.dataset.val; selectChip(goalsWrap, state.objetivo);
@@ -279,6 +393,7 @@
       window.dataLayer = window.dataLayer || [];
       window.dataLayer.push({ event: "lead_whatsapp", cta_origem: state.origem, tratamento: state.tratamento });
       if (typeof window.gtag === "function") window.gtag("event", "lead_whatsapp", { cta_origem: state.origem, tratamento: state.tratamento });
+      fireWhatsappConversion();
       close();
     });
 
@@ -286,11 +401,15 @@
       state.step = 1;
       state.objetivo = opts.objetivo || "";
       state.horario = "";
+      state.dentes = ""; state.faixa = ""; state.valorConversao = 0;
       state.tratamento = opts.tratamento || "";
       state.origem = opts.origem || "";
+      state.leadId = (crypto.randomUUID ? crypto.randomUUID() : Date.now() + "-" + Math.random().toString(36).slice(2));
+      state.sentStep1 = false; state.sentStep2 = false; state.sentWa = false;
       errNome.textContent = ""; errTel.textContent = ""; errQ.textContent = "";
       if (state.objetivo) selectChip(goalsWrap, state.objetivo); else selectChip(goalsWrap, "");
       selectChip(timesWrap, "");
+      selectChip(teethWrap, "");
       try {
         nomeInput.value = localStorage.getItem("gop_lead_nome") || "";
         telInput.value = localStorage.getItem("gop_lead_tel") || "";
