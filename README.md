@@ -68,6 +68,37 @@ Projeto Astro: a Vercel detecta o preset **Astro** automaticamente.
 - Build Command: `astro build` (ou `npm run build`)
 - Output Directory: `dist`
 
+## CTAs e conversões (Google Ads)
+
+Todo CTA do site é o mesmo par de botões, pelo componente `CtaPair`: o **azul**
+("Quero simular o orçamento") e o **vazado** ("Quero agendar consulta"). Os dois
+abrem o **mesmo** quiz de lead (`LeadQuiz`); o que muda é o evento disparado, para
+medir duas conversões separadas.
+
+| Botão | `data-cta` | Evento (dataLayer e gtag) |
+| --- | --- | --- |
+| Azul — simular orçamento | `simular-orcamento` | `cta_simular_orcamento` |
+| Vazado — agendar consulta | `agendar-consulta` | `cta_agendar_consulta` |
+| Lead concluído (abriu o WhatsApp no fim do quiz) | — | `lead_whatsapp` |
+
+Cada evento leva `cta_origem`, `cta_secao` (id da seção) e `pagina`; o
+`lead_whatsapp` leva `cta_origem` e `tratamento`. A origem também entra na
+mensagem do WhatsApp ("Vim por: ..."), para a equipe saber por onde o lead veio.
+
+> **O site ainda não tem GTM nem gtag instalado.** Os eventos são disparados em
+> `window.dataLayer` (e em `gtag`, se existir), então já ficam prontos — mas nada
+> chega ao Google Ads enquanto a tag não for colada no `BaseLayout.astro`. Depois
+> de instalar, crie no GTM um gatilho de evento personalizado para cada nome da
+> tabela e ligue cada um à sua conversão do Ads.
+
+O clique é tratado num único handler por delegação no `BaseLayout.astro` — os
+componentes só escrevem a marcação, não registram listener próprio.
+
+Onde o par aparece: hero, seção "sorriso de casa", bloco de implantes, Diferenciais,
+Equipe, Antes & Depois e a faixa final da home, mais o `QuizCta` no fim de todas as
+páginas de tratamento e do simulador. Os botões do próprio Simulador de Sorriso
+("Agendar minha avaliação" / "Falar no WhatsApp") seguem com o fluxo deles.
+
 ## Pendências de conteúdo (placeholders a substituir)
 
 As seções com foto usam **placeholders em gradiente** (com legendas) — as imagens reais entram nestes caminhos:

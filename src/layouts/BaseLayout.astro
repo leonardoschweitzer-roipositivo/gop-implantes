@@ -92,6 +92,29 @@ requestAnimationFrame(()=>{
 // close mobile menu on link click
 document.querySelectorAll('.nav-links a').forEach(a=>a.addEventListener('click',()=>document.querySelector('.nav-links').classList.remove('open')));
 
+// CTAs de conversão (CtaPair): os dois botões abrem o MESMO quiz; o que muda é o
+// evento, para o Google Ads medir duas conversões separadas. Delegação: vale
+// para qualquer [data-cta], inclusive os que entrarem na página depois.
+document.addEventListener('click',function(e){
+  var b=e.target && e.target.closest ? e.target.closest('[data-cta]') : null;
+  if(!b) return;
+  var id=b.dataset.cta;                       // simular-orcamento | agendar-consulta
+  var evt='cta_'+id.replace(/-/g,'_');        // cta_simular_orcamento | cta_agendar_consulta
+  var origem=id==='simular-orcamento'?'Simulação de orçamento':'Agendamento de consulta';
+  var sec=b.closest('section');
+  var payload={cta:id,cta_origem:origem,cta_secao:sec&&sec.id?sec.id:'',pagina:location.pathname};
+  window.dataLayer=window.dataLayer||[];
+  window.dataLayer.push(Object.assign({event:evt},payload));
+  if(typeof window.gtag==='function') window.gtag('event',evt,payload);
+  if(window.gopQuiz){
+    var opts={origem:origem};
+    if(b.dataset.trat) opts.tratamento=b.dataset.trat;
+    if(b.dataset.obj) opts.objetivo=b.dataset.obj;
+    window.gopQuiz.open(opts);
+  }
+  else window.open('https://wa.me/5511985140604','_blank');
+});
+
 // before/after comparison sliders
 document.querySelectorAll('.ba-range').forEach(r=>{
   const ba=r.closest('.ba');

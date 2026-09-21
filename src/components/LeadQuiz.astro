@@ -175,7 +175,7 @@
     const btnGo = document.getElementById("lqGo");
     const WPP = "5511985140604";
 
-    const state = { step: 1, nome: "", telefone: "", objetivo: "", horario: "", tratamento: "" };
+    const state = { step: 1, nome: "", telefone: "", objetivo: "", horario: "", tratamento: "", origem: "" };
 
     function selectChip(wrap, val) {
       [...wrap.children].forEach((c) => c.classList.toggle("sel", c.dataset.val === val));
@@ -208,6 +208,7 @@
       if (state.tratamento) msg += `\nTenho interesse em: ${state.tratamento}`;
       if (state.objetivo) msg += `\nMeu objetivo: ${state.objetivo}`;
       if (state.horario) msg += `\nMelhor horário para contato: ${state.horario}`;
+      if (state.origem) msg += `\nVim por: ${state.origem}`;
       msg += `\nMeu WhatsApp: ${state.telefone}`;
       msg += `\nGostaria de agendar uma avaliação. 🙂`;
       return `https://wa.me/${WPP}?text=${encodeURIComponent(msg)}`;
@@ -221,6 +222,7 @@
       if (state.tratamento) linhas.push(["Tratamento", state.tratamento]);
       if (state.objetivo) linhas.push(["Objetivo", state.objetivo]);
       if (state.horario) linhas.push(["Melhor horário", state.horario]);
+      if (state.origem) linhas.push(["Veio por", state.origem]);
       linhas.forEach(([k, v]) => {
         const dt = document.createElement("dt"); dt.textContent = k;
         const dd = document.createElement("dd"); dd.textContent = v;
@@ -272,13 +274,20 @@
       else if (state.step === 2) goStep3();
     });
     btnBack.addEventListener("click", () => { if (state.step > 1) { state.step--; render(); } });
-    btnGo.addEventListener("click", () => close());
+    btnGo.addEventListener("click", () => {
+      // lead concluído: evento único, com a origem do CTA que abriu o quiz
+      window.dataLayer = window.dataLayer || [];
+      window.dataLayer.push({ event: "lead_whatsapp", cta_origem: state.origem, tratamento: state.tratamento });
+      if (typeof window.gtag === "function") window.gtag("event", "lead_whatsapp", { cta_origem: state.origem, tratamento: state.tratamento });
+      close();
+    });
 
     function open(opts = {}) {
       state.step = 1;
       state.objetivo = opts.objetivo || "";
       state.horario = "";
       state.tratamento = opts.tratamento || "";
+      state.origem = opts.origem || "";
       errNome.textContent = ""; errTel.textContent = ""; errQ.textContent = "";
       if (state.objetivo) selectChip(goalsWrap, state.objetivo); else selectChip(goalsWrap, "");
       selectChip(timesWrap, "");
