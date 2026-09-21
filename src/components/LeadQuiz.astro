@@ -38,24 +38,24 @@
 
     <div class="lq-step" data-step="2" hidden>
       <fieldset class="lq-fieldset">
-        <legend class="lq-q">Quantos dentes estão faltando hoje?</legend>
-        <div class="lq-chips" id="lqTeeth">
-          <button type="button" class="lq-chip" data-val="1 dente" data-faixa="C" data-value="50">1 dente</button>
-          <button type="button" class="lq-chip" data-val="De 2 a 5 dentes" data-faixa="B" data-value="150">De 2 a 5 dentes</button>
-          <button type="button" class="lq-chip" data-val="Mais de 5 dentes" data-faixa="A" data-value="300">Mais de 5 dentes</button>
-          <button type="button" class="lq-chip" data-val="Uso dentadura ou prótese móvel" data-faixa="A" data-value="300">Uso dentadura ou prótese móvel</button>
-        </div>
-      </fieldset>
-
-      <fieldset class="lq-fieldset">
         <legend class="lq-q">Qual é o seu objetivo?</legend>
         <div class="lq-chips" id="lqGoals">
-          <button type="button" class="lq-chip" data-val="Recuperar um dente perdido">Recuperar um dente perdido</button>
+          <button type="button" class="lq-chip" data-val="Repor dentes que faltam">Repor dentes que faltam</button>
           <button type="button" class="lq-chip" data-val="Alinhar os dentes">Alinhar os dentes</button>
           <button type="button" class="lq-chip" data-val="Estética e clareamento do sorriso">Estética / clarear o sorriso</button>
           <button type="button" class="lq-chip" data-val="Dor ou urgência">Dor ou urgência</button>
           <button type="button" class="lq-chip" data-val="Check-up e limpeza">Check-up e limpeza</button>
           <button type="button" class="lq-chip" data-val="Outro assunto">Outro</button>
+        </div>
+      </fieldset>
+
+      <fieldset class="lq-fieldset" id="lqTeethField" hidden>
+        <legend class="lq-q">Quantos dentes estão faltando hoje?</legend>
+        <div class="lq-chips" id="lqTeeth">
+          <button type="button" class="lq-chip" data-val="1 dente">1 dente</button>
+          <button type="button" class="lq-chip" data-val="De 2 a 5 dentes">De 2 a 5 dentes</button>
+          <button type="button" class="lq-chip" data-val="Mais de 5 dentes">Mais de 5 dentes</button>
+          <button type="button" class="lq-chip" data-val="Uso dentadura ou prótese móvel">Uso dentadura ou prótese móvel</button>
         </div>
       </fieldset>
 
@@ -169,6 +169,7 @@
 
     const steps = [...overlay.querySelectorAll(".lq-step")];
     const stepsNav = [...document.getElementById("lqSteps").children];
+    const teethField = document.getElementById("lqTeethField");
     const teethWrap = document.getElementById("lqTeeth");
     const goalsWrap = document.getElementById("lqGoals");
     const timesWrap = document.getElementById("lqTimes");
@@ -186,6 +187,8 @@
     const btnGo = document.getElementById("lqGo");
     const WPP = "5511985140604";
     const WEBHOOK_URL = import.meta.env.PUBLIC_LEAD_WEBHOOK_URL;
+    // único objetivo que faz a pergunta condicional "quantos dentes" aparecer
+    const OBJETIVO_DENTES = "Repor dentes que faltam";
 
     // gclid/gbraid/wbraid/UTMs: pega da querystring da primeira página em que o
     // lead caiu e guarda em sessionStorage, pra acompanhar ele até o fim do quiz
@@ -231,6 +234,26 @@
       [...wrap.children].forEach((c) => c.classList.toggle("sel", c.dataset.val === val));
     }
 
+    // pergunta "quantos dentes" só aparece (e só é obrigatória) para o objetivo
+    // "Repor dentes que faltam"; ao trocar de objetivo, esconde e limpa a resposta
+    function updateTeethVisibility() {
+      const show = state.objetivo === OBJETIVO_DENTES;
+      teethField.hidden = !show;
+      if (!show) { state.dentes = ""; selectChip(teethWrap, ""); }
+    }
+
+    // faixa/valor da conversão da Etapa 2: só varia por dentes quando o objetivo
+    // é "Repor dentes que faltam"; qualquer outro objetivo cai na faixa D
+    function computeFaixaValor() {
+      if (state.objetivo === OBJETIVO_DENTES) {
+        if (state.dentes === "Mais de 5 dentes" || state.dentes === "Uso dentadura ou prótese móvel") return { faixa: "A", valor: 300 };
+        if (state.dentes === "De 2 a 5 dentes") return { faixa: "B", valor: 150 };
+        if (state.dentes === "1 dente") return { faixa: "C", valor: 50 };
+        return { faixa: "", valor: 0 };
+      }
+      return { faixa: "D", valor: 20 };
+    }
+
     // máscara de telefone BR: (11) 90000-0000
     telInput.addEventListener("input", () => {
       let d = telInput.value.replace(/\D/g, "").slice(0, 11);
@@ -257,6 +280,7 @@
       let msg = `Olá! Sou ${state.nome}. Vim pelo site da GOP Implantes 🦷`;
       if (state.tratamento) msg += `\nTenho interesse em: ${state.tratamento}`;
       if (state.objetivo) msg += `\nMeu objetivo: ${state.objetivo}`;
+      if (state.dentes) msg += `\nDentes faltando: ${state.dentes}`;
       if (state.horario) msg += `\nMelhor horário para contato: ${state.horario}`;
       if (state.origem) msg += `\nVim por: ${state.origem}`;
       msg += `\nMeu WhatsApp: ${state.telefone}`;
@@ -270,8 +294,8 @@
       recap.innerHTML = "";
       const linhas = [];
       if (state.tratamento) linhas.push(["Tratamento", state.tratamento]);
-      if (state.dentes) linhas.push(["Dentes faltando", state.dentes]);
       if (state.objetivo) linhas.push(["Objetivo", state.objetivo]);
+      if (state.dentes) linhas.push(["Dentes faltando", state.dentes]);
       if (state.horario) linhas.push(["Melhor horário", state.horario]);
       if (state.origem) linhas.push(["Veio por", state.origem]);
       linhas.forEach(([k, v]) => {
@@ -283,8 +307,9 @@
       btnGo.href = buildLink();
     }
 
-    // conversão Google Ads da Etapa 1 (primária): telefone p/ conversões otimizadas
-    // + evento, uma vez por preenchimento (guardado em state.sentStep1)
+    // conversão Google Ads "GOP | Contato Etapa 1" (primária): telefone p/
+    // conversões otimizadas + evento, uma vez por preenchimento (state.sentStep1).
+    // Mesma conversão para os dois botões que abrem o quiz (não varia por origem).
     function fireStep1Conversion(phoneE164) {
       if (state.sentStep1) return;
       state.sentStep1 = true;
@@ -296,13 +321,14 @@
         });
       }
       window.dataLayer = window.dataLayer || [];
-      window.dataLayer.push({ event: "gop_lead_etapa1", lead_id: state.leadId });
+      window.dataLayer.push({ event: "gop_lead_etapa1", lead_id: state.leadId, origem: state.origem });
       sendWebhook("lead_etapa1", Object.assign({
-        lead_id: state.leadId, nome: state.nome, telefone: phoneE164,
+        lead_id: state.leadId, nome: state.nome, telefone: phoneE164, origem: state.origem,
       }, attribution));
     }
 
-    // conversão Google Ads da Etapa 2 (secundária, com valor conforme a faixa do lead)
+    // conversão Google Ads "GOP | Qualificado Etapa 2" (secundária, com valor
+    // conforme a faixa do lead — ver computeFaixaValor)
     function fireStep2Conversion(phoneE164) {
       if (state.sentStep2) return;
       state.sentStep2 = true;
@@ -315,15 +341,15 @@
         });
       }
       window.dataLayer = window.dataLayer || [];
-      window.dataLayer.push({ event: "gop_lead_qualificado", lead_id: state.leadId, faixa: state.faixa, value: state.valorConversao });
+      window.dataLayer.push({ event: "gop_lead_qualificado", lead_id: state.leadId, origem: state.origem, faixa: state.faixa, value: state.valorConversao });
       sendWebhook("lead_qualificado", Object.assign({
-        lead_id: state.leadId, nome: state.nome, telefone: phoneE164,
-        dentes: state.dentes, objetivo: state.objetivo, horario: state.horario,
+        lead_id: state.leadId, nome: state.nome, telefone: phoneE164, origem: state.origem,
+        objetivo: state.objetivo, horario: state.horario, dentes: state.dentes,
         faixa: state.faixa, value: state.valorConversao,
       }, attribution));
     }
 
-    // conversão Google Ads do clique no WhatsApp (secundária)
+    // conversão Google Ads "GOP | Clique WhatsApp" (secundária)
     function fireWhatsappConversion() {
       if (state.sentWa) return;
       state.sentWa = true;
@@ -334,7 +360,7 @@
         });
       }
       window.dataLayer = window.dataLayer || [];
-      window.dataLayer.push({ event: "gop_whatsapp_click", lead_id: state.leadId });
+      window.dataLayer.push({ event: "gop_whatsapp_click", lead_id: state.leadId, origem: state.origem });
       sendWebhook("whatsapp_click", { lead_id: state.leadId });
     }
 
@@ -355,13 +381,16 @@
       fireStep1Conversion("+55" + digits);
     }
 
-    // ETAPA 2 → dentes faltando + objetivo + horário
+    // ETAPA 2 → objetivo + horário (+ dentes, só obrigatório se objetivo = OBJETIVO_DENTES)
     function goStep3() {
       errQ.textContent = "";
-      if (!state.dentes || !state.objetivo || !state.horario) {
+      const precisaDentes = state.objetivo === OBJETIVO_DENTES;
+      if (!state.objetivo || !state.horario || (precisaDentes && !state.dentes)) {
         errQ.textContent = "Escolha uma opção em cada pergunta para seguir.";
         return;
       }
+      const { faixa, valor } = computeFaixaValor();
+      state.faixa = faixa; state.valorConversao = valor;
       state.step = 3;
       showRecap();
       render();
@@ -371,12 +400,13 @@
 
     teethWrap.addEventListener("click", (e) => {
       const b = e.target.closest(".lq-chip"); if (!b) return;
-      state.dentes = b.dataset.val; state.faixa = b.dataset.faixa; state.valorConversao = Number(b.dataset.value);
+      state.dentes = b.dataset.val;
       selectChip(teethWrap, state.dentes);
     });
     goalsWrap.addEventListener("click", (e) => {
       const b = e.target.closest(".lq-chip"); if (!b) return;
       state.objetivo = b.dataset.val; selectChip(goalsWrap, state.objetivo);
+      updateTeethVisibility();
     });
     timesWrap.addEventListener("click", (e) => {
       const b = e.target.closest(".lq-chip"); if (!b) return;
@@ -410,6 +440,7 @@
       if (state.objetivo) selectChip(goalsWrap, state.objetivo); else selectChip(goalsWrap, "");
       selectChip(timesWrap, "");
       selectChip(teethWrap, "");
+      updateTeethVisibility();
       try {
         nomeInput.value = localStorage.getItem("gop_lead_nome") || "";
         telInput.value = localStorage.getItem("gop_lead_tel") || "";
