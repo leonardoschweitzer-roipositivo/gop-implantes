@@ -76,10 +76,10 @@ As seções com foto usam **placeholders em gradiente** (com legendas) — as im
 - **Galeria "Quem somos"** → `public/images/clinica/*.jpg` (recepção, consultórios, etc.).
 - **Equipe** → `public/images/equipe.jpg`.
 - **3 dentistas da hero** → `public/images/equipe/dentista-1.jpg`, `dentista-2.jpg`, `dentista-3.jpg` (fotos 3:4). Trocar também os nomes/especialidades dos cards na hero em `src/pages/index.astro` (hoje rotulados por área: Implantes & Protocolo, Ortodontia, Harmonização & Estética).
-- **Antes & Depois** → `public/images/antes-e-depois/antes-e-depois-1.jpeg`, `-2`, `-3`, `-11`, `-22`, `-33`
-  (cada arquivo é uma imagem única já com o antes e o depois). A home mostra os 6 casos em grade, com
-  lightbox ao clicar. Card sem arquivo correspondente é removido sozinho, então dá para publicar menos de 6
-  — para trocar títulos/legendas, edite a seção `#resultados` em `src/pages/index.astro`.
+- **Antes & Depois** → pares em `public/images/casos/`: `antes-e-depois-1.jpeg` (antes) e
+  `antes-e-depois-11.jpeg` (depois), e assim para `2`/`22` e `3`/`33`. A home mostra os três casos
+  em comparadores de arrastar; as fotos são quadradas (1008×1049). Para trocar títulos, textos ou
+  adicionar um caso, edite a seção `#resultados` em `src/pages/index.astro`.
 - **Capas do blog** → `public/images/blog/<slug>.jpg`.
 - **Imagem de compartilhamento (Open Graph)** → `public/images/gop-og.jpg` (1200×630).
 

@@ -92,6 +92,13 @@ requestAnimationFrame(()=>{
 // close mobile menu on link click
 document.querySelectorAll('.nav-links a').forEach(a=>a.addEventListener('click',()=>document.querySelector('.nav-links').classList.remove('open')));
 
+// before/after comparison sliders
+document.querySelectorAll('.ba-range').forEach(r=>{
+  const ba=r.closest('.ba');
+  const sync=()=>ba.style.setProperty('--pos',r.value+'%');
+  r.addEventListener('input',sync);
+  sync();
+});
 </script>
 </body>
 </html>
